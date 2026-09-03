@@ -1,0 +1,39 @@
+PATCH PERBAIKAN KOLOM "PAGU ANGGARAN" - KKA Inspektorat Rokan Hilir
+  ====================================================================
+
+  MASALAH: Form "Buat Sesi Baru" dan "Edit Sesi" di server TIDAK menampilkan
+  kolom "Pagu Anggaran", sehingga pagu selalu tersimpan 0. Ini karena file
+  tampilan form di server masih versi lama. Patch ini memperbaikinya.
+
+  ISI PATCH (4 file):
+    - src/views/sesi/create.php      (tambah kolom Pagu Anggaran di form buat baru)
+    - src/views/sesi/edit.php        (tambah kolom Pagu Anggaran di form edit)
+    - src/views/sesi/show.php        (tampilkan Pagu Anggaran di detail sesi)
+    - src/controllers/SesiController.php (pastikan pagu tersimpan saat buat/edit)
+
+  CARA PASANG (lewat cPanel File Manager, di folder public_html/kka):
+
+    LANGKAH 1 - BACKUP DULU (penting):
+      Untuk tiap file di bawah, klik-kanan -> Rename -> tambahkan ".bak"
+        public_html/kka/src/views/sesi/create.php   -> create.php.bak
+        public_html/kka/src/views/sesi/edit.php     -> edit.php.bak
+        public_html/kka/src/views/sesi/show.php     -> show.php.bak
+        public_html/kka/src/controllers/SesiController.php -> SesiController.php.bak
+
+    LANGKAH 2 - UPLOAD / EKSTRAK:
+      Ekstrak isi zip ini di dalam folder public_html/kka
+      (struktur src/views/... dan src/controllers/... akan otomatis masuk ke
+       tempat yang benar dan menimpa file lama).
+
+    LANGKAH 3 - VERIFIKASI:
+      a. Buka menu "Sesi Audit" -> "Buat Sesi Baru". Sekarang harus muncul
+         kolom "Pagu Anggaran (Rp)" tepat di bawah kolom "Kegiatan".
+      b. Isi pagu, simpan, lalu buka Rekap/Ekspor -> pagu harus muncul.
+      c. Untuk sesi 2026 yang terlanjur pagu 0: buka sesi itu -> Edit ->
+         isi Pagu Anggaran -> Simpan.
+
+    KALAU TERJADI ERROR:
+      Kembalikan file .bak (hapus yang baru, rename .bak ke nama asal).
+
+  CATATAN: Patch ini TIDAK mengubah database dan TIDAK menghapus data apa pun.
+  

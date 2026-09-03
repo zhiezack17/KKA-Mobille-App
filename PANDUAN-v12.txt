@@ -1,0 +1,48 @@
+PATCH v12 - CETAK & EXPORT EXCEL KERTAS KERJA (KKA)
+  ====================================================
+  Inspektorat Kabupaten Rokan Hilir - Kertas Kerja Audit (KKA)
+
+  APA YANG BERUBAH (dua permintaan):
+
+  1) CETAK KKA - kolom tanda tangan "Diketahui oleh, Pengendali Teknis (Dalnis)"
+     DIHILANGKAN. Sekarang hanya 2 kolom:
+        - Disusun oleh (Auditor)
+        - Direview oleh (Ketua Tim)
+
+  2) EXPORT EXCEL Kertas Kerja - dulu tampilannya berbeda dengan Preview Cetak.
+     Sekarang SUDAH DISAMAKAN dengan Preview Cetak:
+        - Ada KOP (Pemerintah Rokan Hilir / Inspektorat / alamat)
+        - Tabel identitas 2 kolom (Kepenghuluan, Bidang, Sub Bidang, Kegiatan,
+          Pagu, No.KKA, Ref.KKA, Masa Audit, Objek Audit)
+        - Tabel rincian belanja + baris JUMLAH
+        - Kesimpulan Audit & Sumber Data
+        - Tanda tangan 2 kolom (Auditor & Ketua Tim) - tanpa Dalnis juga.
+
+  TIDAK ada perubahan database sama sekali. Hanya 2 file.
+
+  ISI PATCH (2 file):
+     src/controllers/PrintController.php
+     src/views/print/sesi.php
+
+  CARA PASANG (cPanel File Manager, di folder public_html/kka):
+
+    LANGKAH 1 - BACKUP DULU (tambahkan .bak, JANGAN hilangkan .php):
+        src/controllers/PrintController.php  ->  PrintController.php.bak
+        src/views/print/sesi.php             ->  sesi.php.bak
+
+    LANGKAH 2 - EKSTRAK:
+        Ekstrak isi zip ini di dalam folder public_html/kka
+        (file baru otomatis menimpa yang lama).
+
+    LANGKAH 3 - VERIFIKASI:
+        a. Buka satu sesi -> Cetak KKA -> pastikan tanda tangan hanya 2 kolom
+           (Auditor & Ketua Tim), tidak ada lagi kolom Dalnis.
+        b. Dari sesi yang sama -> Export Excel -> buka di Excel, bandingkan:
+           susunannya sekarang sama dengan Preview Cetak.
+
+    KALAU ADA ERROR:
+        Hapus file baru, rename file .bak kembali ke nama semula.
+
+  CATATAN: Kolom "Dievaluasi/Dalnis" di form input sesi TIDAK dihapus (data lama
+  tetap aman); yang dihilangkan hanya bagian tampilan CETAK & EXPORT.
+  

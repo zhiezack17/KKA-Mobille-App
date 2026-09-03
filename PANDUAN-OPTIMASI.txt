@@ -1,0 +1,45 @@
+=====================================================================
+ PATCH OPTIMASI KECEPATAN KKA — INSPEKTORAT ROKAN HILIR
+=====================================================================
+
+Patch ini membuat aplikasi lebih ringan & mengurangi "hang saat klik
+cepat / tombol back". Ada 2 langkah: (A) jalankan SQL index, lalu
+(B) unggah file yang diperbarui. Keduanya AMAN untuk data yang ada.
+
+---------------------------------------------------------------------
+ LANGKAH A — Tambah Index Database (sekali saja)
+---------------------------------------------------------------------
+1. Buka cPanel -> phpMyAdmin.
+2. Klik nama database KKA di kiri.
+3. Klik tab "SQL".
+4. Buka file:  database/optimasi-index.sql  (di dalam zip ini),
+   salin seluruh isinya, tempel ke kotak SQL, lalu klik "Go/Kirim".
+   -> Jika ada pesan "Duplicate key name", ABAIKAN (index sudah ada).
+
+---------------------------------------------------------------------
+ LANGKAH B — Unggah File yang Diperbarui
+---------------------------------------------------------------------
+1. Buka cPanel -> File Manager -> masuk folder:  public_html/kka
+2. Unggah & ekstrak isi zip ini di folder tersebut, pilih "Overwrite"
+   (timpa) saat diminta. File yang akan tergantikan:
+     - public/.htaccess                       (kompresi + cache aset)
+     - src/controllers/LampiranController.php  (lepas kunci saat unduh)
+     - src/controllers/PrintController.php     (lepas kunci saat ekspor)
+3. Selesai. Muat ulang aplikasi (Ctrl+F5).
+
+---------------------------------------------------------------------
+ APA YANG DIOPTIMALKAN
+---------------------------------------------------------------------
+1. Index database  -> query daftar sesi & rekap lebih cepat, sehingga
+   setiap permintaan PHP selesai lebih cepat dan proses server cepat
+   bebas kembali (mengurangi tumpukan proses / "process limit").
+2. .htaccess       -> aktifkan kompresi gzip (HTML/CSS/JS lebih kecil)
+   dan cache aset (logo/CSS/JS) di browser -> navigasi & tombol back
+   terasa lebih cepat, hemat kuota.
+3. Unduh & ekspor  -> kunci sesi dilepas sebelum mengirim file besar,
+   sehingga klik/aksi lain tidak ikut terblokir selama proses.
+
+CATATAN: Batas jumlah proses (Entry Process) adalah kuota hosting.
+Optimasi ini menurunkan tekanan, namun bila pengguna aktif banyak,
+menaikkan kuota di Rumahweb tetap disarankan.
+=====================================================================

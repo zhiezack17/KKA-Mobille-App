@@ -1,0 +1,37 @@
+PATCH v11 - EXPORT EXCEL REKAP PER DESA (menyusul tampilan v10)
+  ================================================================
+  Inspektorat Rokan Hilir - Kertas Kerja Audit (KKA)
+
+  APA YANG BERUBAH:
+  - Tombol "Export Excel" di halaman Rekap per Desa sekarang MENGIKUTI tampilan
+    layar: 1 baris per DESA (semua tahun digabung). Kolom "Tahun" berisi daftar
+    tahun yang tergabung (mis. "2026, 2025").
+  - Filter tetap berfungsi: kalau Anda pilih Tahun tertentu lalu Export, hasilnya
+    hanya tahun itu. Begitu juga filter Desa.
+  - TIDAK ada perubahan database sama sekali. Hanya 1 file yang diubah.
+
+  ISI PATCH (1 file):
+     src/controllers/PrintController.php
+
+  CARA PASANG (cPanel File Manager, di folder public_html/kka):
+
+    LANGKAH 1 - BACKUP DULU:
+      Rename file lama dengan menambahkan .bak (JANGAN hilangkan .php):
+        src/controllers/PrintController.php  ->  src/controllers/PrintController.php.bak
+
+    LANGKAH 2 - EKSTRAK:
+      Ekstrak isi zip ini di dalam folder public_html/kka
+      (file src/controllers/PrintController.php baru akan menggantikan yang lama).
+
+    LANGKAH 3 - VERIFIKASI:
+      a. Buka Rekap per Desa -> klik "Export Excel" (tanpa filter):
+         file berisi 1 baris per desa, kolom Tahun berisi daftar tahun.
+      b. Pilih filter Tahun tertentu -> Export -> hanya tahun itu yang muncul.
+      c. (Bila perlu) login auditor lain -> Export -> hanya data miliknya.
+
+    KALAU ADA ERROR:
+      Hapus PrintController.php yang baru, lalu rename PrintController.php.bak
+      kembali menjadi PrintController.php.
+
+  CATATAN: Patch ini TIDAK menyentuh database.
+  

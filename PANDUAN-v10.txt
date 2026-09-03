@@ -1,0 +1,67 @@
+PATCH v10 - PERAPIAN TAMPILAN KKA (Dashboard, Sesi Audit, Rekap Desa)
+  =====================================================================
+  Inspektorat Rokan Hilir - Kertas Kerja Audit
+
+  APA YANG BERUBAH (hanya TAMPILAN + cara menampilkan data; TIDAK mengubah
+  database, TIDAK menghapus data apa pun):
+
+  1) DASHBOARD
+     - Panel kiri sekarang menampilkan "Desa/Kepenghuluan yang Diaudit":
+       satu desa satu kartu (tidak berulang-ulang lagi).
+     - Klik sebuah desa -> langsung ke daftar Sesi Audit yang tersaring untuk
+       desa itu (di sana terlihat semua bidang yang diinput).
+
+  2) SESI AUDIT
+     - Sekarang dikelompokkan per BIDANG (contoh: "1. Bidang Pemerintahan").
+     - Semua bidang tampil; bidang yang belum ada isinya tetap terlihat tapi
+       kosong (tidak masalah).
+     - Klik sebuah bidang -> terbuka isinya: dikelompokkan per Sub Bidang,
+       lalu daftar sesinya. Rapi, tidak berserakan.
+     - Kolom pencarian & filter tetap ada. Kalau sedang mencari/memfilter,
+       grup yang cocok otomatis terbuka.
+
+  3) REKAP PER DESA
+     - Tabel & grafik sekarang 1 baris per DESA (digabung semua tahun).
+       Jadi "Sei Sialang Hulu" cukup 1 baris. Kalau nanti ada desa lain,
+       baru muncul 2 baris, dst.
+     - Kolom "Tahun" menampilkan tahun-tahun yang tergabung (mis. "2026, 2025").
+     - Ingin lihat 1 tahun saja? Pakai filter "Tahun" di atas tabel.
+     - Catatan: tombol "Export Excel" masih memakai rincian per tahun
+       (tidak diubah). Bilang saja kalau mau ini juga disamakan.
+
+  ISI PATCH (6 file):
+     src/controllers/DashboardController.php
+     src/controllers/SesiController.php
+     src/controllers/RekapController.php
+     src/views/dashboard/index.php
+     src/views/sesi/index.php
+     src/views/rekap/index.php
+
+  CARA PASANG (cPanel File Manager, di folder public_html/kka):
+
+    LANGKAH 1 - BACKUP DULU (penting, supaya bisa dikembalikan):
+      Klik-kanan tiap file -> Rename -> tambahkan ".bak", untuk:
+        src/controllers/DashboardController.php  -> .bak
+        src/controllers/SesiController.php       -> .bak
+        src/controllers/RekapController.php      -> .bak
+        src/views/dashboard/index.php            -> .bak
+        src/views/sesi/index.php                 -> .bak
+        src/views/rekap/index.php                -> .bak
+
+    LANGKAH 2 - EKSTRAK:
+      Ekstrak isi zip ini di dalam folder public_html/kka
+      (struktur src/... otomatis masuk ke tempat yang benar & menimpa file lama).
+
+    LANGKAH 3 - VERIFIKASI:
+      a. Buka Dashboard -> panel kiri berisi kartu per-desa (tidak berulang).
+      b. Buka Sesi Audit -> daftar bidang; klik satu bidang -> isinya terbuka.
+      c. Buka Rekap per Desa -> tabel 1 baris per desa; kolom Tahun berisi
+         daftar tahun.
+      d. Coba juga login sebagai auditor lain -> pastikan hanya melihat data
+         miliknya (isolasi data tetap jalan).
+
+    KALAU ADA ERROR:
+      Hapus file baru, lalu kembalikan file .bak (rename .bak ke nama semula).
+
+  CATATAN: Patch ini TIDAK menyentuh database sama sekali.
+  

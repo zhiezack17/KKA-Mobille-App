@@ -1,0 +1,85 @@
+==================================================================
+PATCH KKA v5 — ISOLASI DATA + BERBAGI SESI AUDIT
+Inspektorat Kabupaten Rokan Hilir
+==================================================================
+
+PENTING: Patch ini KUMULATIF (sudah termasuk seluruh isi patch v4).
+Jika Bapak BELUM memasang v4, cukup pasang v5 ini saja.
+Jika sudah memasang v4, v5 ini akan menimpanya dengan aman.
+
+APA YANG ADA DI PATCH INI
+-------------------------
+1) ISOLASI DATA (dari v4):
+   * Auditor -> hanya melihat & mengelola data MILIKNYA SENDIRI.
+   * Admin   -> melihat & mengelola SEMUA data.
+
+2) BERBAGI SESI AUDIT (BARU di v5):
+   * Saat membuat / mengedit sesi audit, PEMBUAT sesi bisa mencentang
+     rekan auditor yang boleh IKUT MELIHAT & MENGERJAKAN sesi itu.
+   * Tidak ada "tim tetap" — pembuat bebas memilih rekan per sesi.
+   * Auditor yang diberi bagian bisa: buka detail, tambah/edit rincian,
+     unggah/hapus lampiran, cetak, dan export sesi tsb.
+   * HANYA pembuat sesi (atau admin) yang bisa mengubah daftar berbagi
+     dan MENGHAPUS sesi. Auditor penerima tidak bisa menghapus sesi.
+   * Admin tetap melihat semua sesi tanpa perlu diberi bagian.
+
+LANGKAH 1 — JALANKAN MIGRASI DATABASE (WAJIB, SEKALI SAJA)
+----------------------------------------------------------
+Fitur berbagi butuh satu tabel baru. Ini AMAN: hanya menambah
+tabel, tidak mengubah/menghapus data yang sudah ada.
+
+1. Login cPanel -> buka "phpMyAdmin".
+2. Di panel kiri, KLIK nama database KKA (mis. namauser_kka).
+3. Klik tab "SQL" di atas.
+4. Buka file database/migrasi-berbagi-sesi.sql (dari zip ini) dengan
+   Notepad, salin SELURUH isinya, tempel ke kotak SQL.
+5. Klik "Go / Kirim". Muncul pesan sukses -> selesai.
+   (Bila dijalankan dua kali tidak masalah, tabel tidak akan dobel.)
+
+LANGKAH 2 — PASANG FILE (via cPanel File Manager)
+-------------------------------------------------
+1. File Manager -> masuk ke folder aplikasi KKA
+   (folder berisi sub-folder "src", "public", "database").
+2. (DISARANKAN) Backup dulu: klik kanan folder "src" -> Compress
+   -> simpan sebagai src-backup.zip.
+3. Upload "kka-fix-v5-berbagi-sesi.zip" ke folder aplikasi KKA.
+4. Klik kanan zip tsb -> Extract. Saat diminta timpa (overwrite),
+   pilih "Yes / Replace".
+5. Hapus file zip setelah selesai. Langsung aktif.
+
+FILE YANG DIGANTI / DITAMBAH
+----------------------------
+  src/lib/Helpers.php                        (diganti)
+  src/controllers/SesiController.php         (diganti)
+  src/controllers/DashboardController.php    (diganti)
+  src/controllers/RekapController.php        (diganti)
+  src/controllers/PrintController.php        (diganti)
+  src/controllers/RincianController.php      (diganti)
+  src/controllers/LampiranController.php     (diganti)
+  src/views/sesi/create.php                  (diganti)
+  src/views/sesi/edit.php                    (diganti)
+  src/views/sesi/show.php                    (diganti)
+  database/migrasi-berbagi-sesi.sql          (baru — untuk Langkah 1)
+
+CARA UJI
+--------
+1. Login AUDITOR A -> buat sesi baru. Di bawah form ada kotak
+   "Bagikan ke Auditor Lain" -> centang AUDITOR B -> Simpan.
+2. Login AUDITOR B -> sesi milik A tsb kini MUNCUL di daftar B,
+   dan B bisa membuka detail + menambah rincian/lampiran.
+3. Login AUDITOR C (tidak dicentang) -> TIDAK melihat sesi itu.
+   Coba buka lewat URL langsung (mis. /sesi/show?id=5) -> ditolak.
+4. Di halaman detail sesi, nama auditor penerima tampil di kotak
+   "Dibagikan Kepada".
+5. Login ADMIN -> melihat SEMUA sesi seperti biasa.
+6. Untuk mencabut akses: pembuat sesi buka "Edit Identitas" ->
+   hilangkan centang -> Simpan.
+
+CATATAN
+-------
+* Mengedit "Kesimpulan" di halaman detail TIDAK mengubah daftar
+  berbagi (aman). Daftar berbagi hanya berubah lewat form Buat /
+  Edit Identitas sesi.
+* Sesi lama (sebelum patch) tetap hanya milik pembuatnya sampai
+  pembuat/admin membagikannya.
+==================================================================

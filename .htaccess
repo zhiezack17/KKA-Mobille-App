@@ -1,0 +1,38 @@
+# KKA Mobile API - URL Rewrite & CORS
+Options -MultiViews
+RewriteEngine On
+
+# =========================================================
+# CORS HEADERS (100% AKTIF di APACHE SEBELUM PHP EXECUTE!)
+# =========================================================
+Header always set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With, X-Client-Type, Accept, Origin"
+Header always set Access-Control-Max-Age "3600"
+Header always set Access-Control-Expose-Headers "Authorization, Content-Type, Content-Length"
+
+# Handle preflight OPTIONS early (tanpa masuk ke PHP!)
+<IfModule mod_rewrite.c>
+  RewriteCond %{REQUEST_METHOD} =OPTIONS
+  RewriteRule ^ - [R=204,L]
+</IfModule>
+
+# Deny direct access to hidden files
+<FilesMatch "^\.">
+  Order allow,deny
+  Deny from all
+</FilesMatch>
+
+# Security: disable directory listing
+Options -Indexes
+
+# Rewrite rules: semua request ke index.php (Front Controller pattern)
+<IfModule mod_rewrite.c>
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.php [L,QSA]
+</IfModule>
+
+# Default charset
+AddDefaultCharset UTF-8
+AddType application/json .json

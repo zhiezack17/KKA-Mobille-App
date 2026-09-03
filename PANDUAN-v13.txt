@@ -1,0 +1,179 @@
+═══════════════════════════════════════════════════════════════
+  UPDATE KKA v13 — Master KKA + Rekap Baru + Fix Upload 500
+  Inspektorat Kabupaten Rokan Hilir · Juli 2026
+═══════════════════════════════════════════════════════════════
+
+Update ini menambah/memperbaiki:
+  1. Preview Sesi Audit — kolom baru: "Pagu Anggaran" per rincian,
+     urutan kolom: Uraian | Pagu | Realisasi | Dikwitansi | Selisih
+     Rumus selisih = Realisasi − Dikwitansi
+     Label "Ref. KKA" diganti "Ref. PKA"
+  2. Tombol "← Kembali" di halaman detail Sesi Audit
+  3. Rekap per Desa — layout baru mengikuti template rekap:
+     - Filter: Bidang, Sub Bidang, Kecamatan, Tahun
+     - Grouping per Sub Bidang · Kecamatan · Tahun
+     - Kolom: No | Sub Bidang | Kecamatan | Tahun | Jumlah Sesi
+              | Pagu | Realisasi | Dikwitansi | Selisih | Keterangan
+  4. Menu Master KKA (baru) — 3 tipe dokumen:
+     - KKP Standar (Narasi audit)
+     - KKA Fisik (Tabel pengukuran STA, Jarak, Lebar I & II, Tebal,
+       Volume — auto-hitung)
+     - KKA Sketsa / Foto Lapangan (upload multi-foto)
+     Menu ada di sidebar tepat di bawah "Rekap per Desa".
+  5. Fix bug HTTP 500 saat upload lampiran — sekarang error ditangani
+     dengan pesan yang jelas (tipe file, ukuran, permission folder, dll)
+
+
+════════════════════════════
+  CARA DEPLOY DI VPS aaPanel
+════════════════════════════
+
+LANGKAH 1 — BACKUP dulu (SANGAT PENTING!)
+  • Login aaPanel → File Manager
+  • Compress folder /www/wwwroot/kka.arsipdigital-inspektorat.com
+    (atau lokasi document root sub-domain) → backup_YYYYMMDD.zip
+  • Backup database via phpMyAdmin: pilih DB → Export → Custom → Go
+
+LANGKAH 2 — UPLOAD FILE BARU
+  File yang diubah / ditambah:
+    ✏️  src/controllers/SesiController.php       (rumus selisih)
+    ✏️  src/controllers/RincianController.php    (input pagu)
+    ✏️  src/controllers/PrintController.php      (Excel & preview)
+    ✏️  src/controllers/RekapController.php      (grouping baru)
+    ✏️  src/controllers/LampiranController.php   (fix 500 + logging)
+    ✨  src/controllers/MasterKkaController.php  (BARU)
+    ✏️  src/views/sesi/show.php                  (tombol Back, kolom Pagu)
+    ✏️  src/views/sesi/create.php                (label Ref PKA)
+    ✏️  src/views/sesi/edit.php                  (label Ref PKA)
+    ✏️  src/views/print/sesi.php                 (kolom Pagu, selisih)
+    ✏️  src/views/rekap/index.php                (layout baru)
+    ✏️  src/views/partials/sidebar.php           (menu Master KKA)
+    ✨  src/views/master/index.php               (BARU)
+    ✨  src/views/master/create.php              (BARU)
+    ✨  src/views/master/edit.php                (BARU)
+    ✨  src/views/master/preview.php             (BARU)
+    ✏️  public/index.php                         (route Master KKA)
+    ✨  public/uploads/master/KKP_MASTER.xls     (file template BARU)
+    ✨  database/migration_master_kka.sql        (BARU)
+
+  Cara upload:
+    a. Compress folder proyek ini jadi ZIP di komputer Anda
+    b. aaPanel → File Manager → masuk ke folder subdomain
+    c. Upload ZIP → klik kanan → Extract → Overwrite
+       ATAU upload masing-masing file yang diubah lewat FTP/SFTP
+
+LANGKAH 3 — JALANKAN MIGRATION DATABASE (WAJIB!)
+  Karena ada tabel baru untuk Master KKA:
+
+  Cara A (via phpMyAdmin di aaPanel):
+    1. aaPanel → Databases → pilih DB Anda → phpMyAdmin
+    2. Pilih database KKA → klik tab "SQL"
+    3. Buka file database/migration_master_kka.sql, copy semua isinya
+    4. Paste ke kotak SQL, klik "Go"
+    5. Pastikan muncul 3 tabel baru:
+         - kka_master
+         - kka_master_fisik
+         - kka_master_foto
+
+  Cara B (via terminal aaPanel):
+    mysql -u USER -p DBNAME < database/migration_master_kka.sql
+
+LANGKAH 4 — PASTIKAN FOLDER UPLOAD WRITABLE (fix bug 500!)
+  Ini penyebab HTTP 500 saat upload lampiran di server lama.
+
+  Via aaPanel File Manager:
+    1. Masuk ke folder public/uploads/
+    2. Klik kanan → Permissions
+    3. Set ke: 755  (Owner: Read+Write+Execute)
+       atau 775 bila user web-server berbeda dgn owner
+    4. Centang "Apply to sub-directories/files"
+
+  Via SSH:
+    chown -R www:www /www/wwwroot/kka/public/uploads
+    chmod -R 775 /www/wwwroot/kka/public/uploads
+
+  Pastikan juga folder master ada:
+    mkdir -p /www/wwwroot/kka/public/uploads/master
+    chmod 775 /www/wwwroot/kka/public/uploads/master
+
+LANGKAH 5 — CEK PHP CONFIG (bila upload masih gagal)
+  aaPanel → Software Store → PHP 8.1/8.2 → Setting → Config Modify
+  Pastikan:
+    upload_max_filesize = 20M
+    post_max_size       = 25M
+    memory_limit        = 256M
+  Ekstensi wajib aktif:
+    ✓ fileinfo   (deteksi MIME)
+    ✓ pdo_mysql
+    ✓ mbstring
+    ✓ gd         (untuk foto)
+  Setelah ubah config, restart PHP:
+    aaPanel → Software Store → PHP → Restart
+
+LANGKAH 6 — TEST DI BROWSER
+  1. Login: https://kka.arsipdigital-inspektorat.com/login
+  2. Sesi Audit → buka salah satu sesi → klik "Cetak / Preview"
+     ✓ Pastikan kolom baru muncul (Pagu Anggaran, Realisasi,
+       Dikwitansi, Selisih)
+     ✓ Pastikan label "Ref. PKA" (bukan lagi Ref. KKA)
+     ✓ Tombol "← Kembali" muncul di kiri Cetak/Preview
+  3. Sesi Audit → upload lampiran (coba PDF kecil)
+     ✓ Muncul notif hijau "Lampiran ... berhasil diunggah"
+     ✓ Bila gagal → notif merah dengan pesan spesifik
+       (bukan lagi "This page isn't working" HTTP 500)
+  4. Menu Rekap per Desa → pilih filter Bidang
+     ✓ Tabel menampilkan Sub Bidang · Kecamatan · Tahun
+  5. Menu Master KKA (baru!) → klik "Buat Dokumen Baru"
+     ✓ Pilih Sesi Audit → pilih Tipe (Standar/Fisik/Sketsa) → Simpan
+     ✓ Isi form, Preview A4, Export Excel
+
+LANGKAH 7 — BILA MASIH ADA MASALAH UPLOAD 500 SETELAH STEP 4-5
+  Cek log error terbaru:
+    aaPanel → Logs → pilih Website → "kka.arsipdigital..."
+    → klik "View Error Log"
+
+  ATAU via terminal:
+    tail -50 /www/wwwroot/kka.arsipdigital-inspektorat.com/error_log
+    tail -50 /www/server/php/82/var/log/php-fpm.log
+
+  Sekarang log akan mengandung pesan detail dari [LampiranUpload],
+  contoh:
+    [LampiranUpload] sesi=14 file=foto.jpg size=6613436
+      err=0 msg=Ukuran file (6.31 MB) melebihi batas 10 MB.
+
+  Kirim ke saya baris [LampiranUpload] jika Anda temui, saya
+  bantu diagnosa lebih lanjut.
+
+
+═══════════════════════════════════════════
+  RINGKASAN PERUBAHAN DATABASE
+═══════════════════════════════════════════
+  Tabel baru (dari migration_master_kka.sql):
+    - kka_master           (dokumen Master KKA: standar/fisik/sketsa)
+    - kka_master_fisik     (baris pengukuran STA/Jarak/Lebar/Tebal)
+    - kka_master_foto      (foto lapangan untuk tipe sketsa)
+
+  Tidak ada perubahan pada tabel lama.
+  Data lama TIDAK terhapus/berubah.
+
+
+═══════════════════════════════════════════
+  CATATAN PENTING
+═══════════════════════════════════════════
+  • File template KKP MASTER.xls sudah disertakan di
+    public/uploads/master/KKP_MASTER.xls. Pengguna bisa
+    mengunduh via tombol "Download Template .xls" di menu Master KKA.
+
+  • Semua data-testid tetap dipertahankan, sehingga automated
+    testing (jika ada) tetap jalan.
+
+  • Rumus Selisih di Rekap dan Preview sekarang:
+       Selisih = Realisasi − Dikwitansi
+    (sebelumnya: Dikwitansi − Realisasi)
+    Data lama tetap valid; hanya cara tampilnya yang berubah.
+
+  • Kolom Pagu Anggaran per rincian sudah ada di database
+    (kka_rincian.pagu_anggaran) sejak versi sebelumnya, hanya
+    sekarang di-expose ke form input dan tampilan.
+
+═══════════════════════════════════════════
