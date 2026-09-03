@@ -22,6 +22,25 @@ if ($resource === 'kecamatan') {
             api_response(422, false, 'Kecamatan sudah ada atau gagal disimpan');
         }
     }
+    if ($subRes1 !== null && ctype_digit((string)$subRes1)) {
+        $id = (int)$subRes1;
+        if ($method === 'PUT') {
+            $apiAuth->requireAdmin();
+            $nama = trim((string)($input['nama'] ?? ''));
+            if ($nama === '') api_response(422, false, 'Nama kecamatan wajib diisi');
+            $exists = DB::one('SELECT id FROM kka_kecamatan WHERE id = ?', [$id]);
+            if (!$exists) api_response(404, false, 'Kecamatan tidak ditemukan');
+            DB::update('kka_kecamatan', ['nama' => $nama], ['id' => $id]);
+            api_response(200, true, 'Kecamatan diperbarui');
+        }
+        if ($method === 'DELETE') {
+            $apiAuth->requireAdmin();
+            $used = (int)DB::scalar('SELECT COUNT(*) FROM kka_desa WHERE kecamatan_id = ?', [$id]);
+            if ($used > 0) api_response(422, false, 'Kecamatan masih memiliki ' . $used . ' desa/kepenghuluan');
+            DB::delete('kka_kecamatan', ['id' => $id]);
+            api_response(200, true, 'Kecamatan dihapus');
+        }
+    }
 }
 
 if ($resource === 'desa') {

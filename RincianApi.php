@@ -62,10 +62,10 @@ if ($subRes2 === null && $subRes1 !== null && ctype_digit((string)$subRes1)) {
 
 if ($subRes1 !== null && ctype_digit((string)$subRes1) && $subRes2 === null) {
     $rincianId = (int)$subRes1;
-    $rincian = DB::one('SELECT r.*, s.created_by AS sesi_creator FROM kka_rincian r
-                        JOIN kka_sesi s ON s.id = r.sesi_id WHERE r.id = ?', [$rincianId]);
+    $rincian = DB::one('SELECT * FROM kka_rincian WHERE id = ?', [$rincianId]);
     if (!$rincian) api_response(404, false, 'Rincian tidak ditemukan');
-    if (!$apiAuth->isAdmin() && (int)$rincian['sesi_creator'] !== (int)$apiAuth->id()) {
+    $sesiOwn = DB::one('SELECT * FROM kka_sesi WHERE id = ?', [(int)$rincian['sesi_id']]);
+    if (!$sesiOwn || !api_sesi_is_owned($apiAuth, $sesiOwn)) {
         api_response(403, false, 'Akses ditolak');
     }
 

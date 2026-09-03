@@ -11,19 +11,31 @@ import SesiDetailScreen from '../screens/SesiDetailScreen';
 import SesiFormScreen from '../screens/SesiFormScreen';
 import RekapScreen from '../screens/RekapScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import type { ApiUser } from '../types';
+import AdminHomeScreen from '../screens/AdminHomeScreen';
+import DesaManagementScreen from '../screens/DesaManagementScreen';
+import UserManagementScreen from '../screens/UserManagementScreen';
+import MasterKkaListScreen from '../screens/MasterKkaListScreen';
+import MasterKkaFormScreen from '../screens/MasterKkaFormScreen';
+import MasterKkaDetailScreen from '../screens/MasterKkaDetailScreen';
 
 export type RootStackParamList = {
   Login: undefined;
   Main: undefined;
   SesiDetail: { id: number; title?: string };
   SesiForm: { id?: number } | undefined;
+  AdminMenu: undefined;
+  DesaManagement: undefined;
+  UserManagement: undefined;
+  MasterKkaList: undefined;
+  MasterKkaForm: { id?: number; sesiId?: number } | undefined;
+  MasterKkaDetail: { id: number; title?: string };
 };
 
 export type MainTabParamList = {
   Beranda: undefined;
   Sesi: undefined;
   Rekap: undefined;
+  Admin: undefined;
   Profil: undefined;
 };
 
@@ -37,6 +49,9 @@ function TabBarIcon({ name, color, size }: { name: IconName; color: string; size
 }
 
 function MainTabs() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -62,6 +77,13 @@ function MainTabs() {
         component={RekapScreen}
         options={{ tabBarIcon: ({ color, size }) => <TabBarIcon name="stats-chart" color={color} size={size} /> }}
       />
+      {isAdmin ? (
+        <Tab.Screen
+          name="Admin"
+          component={AdminHomeScreen}
+          options={{ tabBarIcon: ({ color, size }) => <TabBarIcon name="settings" color={color} size={size} /> }}
+        />
+      ) : null}
       <Tab.Screen
         name="Profil"
         component={ProfileScreen}
@@ -72,7 +94,7 @@ function MainTabs() {
 }
 
 export default function RootNavigator() {
-  const { token, user } = useAuth();
+  const { token } = useAuth();
 
   return (
     <Stack.Navigator
@@ -97,6 +119,20 @@ export default function RootNavigator() {
             name="SesiForm"
             component={SesiFormScreen}
             options={({ route }) => ({ title: route.params?.id ? 'Edit Sesi' : 'Buat Sesi Baru' })}
+          />
+          <Stack.Screen name="AdminMenu" component={AdminHomeScreen} options={{ title: 'Administrasi' }} />
+          <Stack.Screen name="DesaManagement" component={DesaManagementScreen} options={{ title: 'Manajemen Desa' }} />
+          <Stack.Screen name="UserManagement" component={UserManagementScreen} options={{ title: 'Manajemen Pengguna' }} />
+          <Stack.Screen name="MasterKkaList" component={MasterKkaListScreen} options={{ title: 'Master KKA' }} />
+          <Stack.Screen
+            name="MasterKkaForm"
+            component={MasterKkaFormScreen}
+            options={({ route }) => ({ title: route.params?.id ? 'Edit Master KKA' : 'Buat Master KKA' })}
+          />
+          <Stack.Screen
+            name="MasterKkaDetail"
+            component={MasterKkaDetailScreen}
+            options={({ route }) => ({ title: route.params?.title ?? 'Detail Master KKA' })}
           />
         </>
       )}

@@ -176,11 +176,24 @@ export interface DashboardData {
   recent_sesi: Sesi[];
 }
 
+export interface PerGrup {
+  sub_bidang: string;
+  kecamatan: string;
+  tahun: number;
+  jumlah_sesi: number;
+  pagu: number;
+  dikwitansi: number;
+  realisasi: number;
+  selisih: number;
+  persentase_realisasi: number;
+}
+
 export interface RekapData {
   tahun: number;
   ringkasan: RekapRingkasan;
   per_desa: PerDesa[];
   per_bidang: PerBidang[];
+  per_grup: PerGrup[];
 }
 
 export interface SesiDetail {
@@ -220,4 +233,68 @@ export interface RincianPayload {
   realisasi?: number;
   penerima?: string | null;
   keterangan?: string | null;
+}
+
+/* ------------------------------ Master KKA ------------------------------ */
+
+export type MasterKkaTipe = 'standar' | 'fisik' | 'sketsa';
+
+export interface MasterFisikRow {
+  id?: number;
+  sta?: string | null;
+  jarak?: number | string | null;
+  lebar1?: number | string | null;
+  lebar2?: number | string | null;
+  tebal?: number | string | null;
+  volume?: number | string | null;
+  keterangan?: string | null;
+  urutan?: number;
+}
+
+export interface MasterFoto {
+  id: number;
+  master_id?: number;
+  nama_file: string;
+  nama_asli?: string | null;
+  mime_type?: string | null;
+  ukuran?: number;
+  keterangan?: string | null;
+  created_at?: string;
+  file_url?: string;
+}
+
+export interface MasterKka {
+  id: number;
+  tipe: MasterKkaTipe;
+  judul: string;
+  narasi?: string | null;
+  sesi_id: number;
+  sesi?: Sesi | null;
+  objek_audit?: string;
+  desa?: string;
+  kecamatan?: string;
+  bidang?: string;
+  jumlah_fisik?: number;
+  jumlah_foto?: number;
+  created_at?: string;
+  created_by?: number | null;
+}
+
+export interface MasterKkaDetail extends Omit<MasterKka, 'sesi'> {
+  fisik: MasterFisikRow[];
+  foto: MasterFoto[];
+  sesi: {
+    id: number;
+    objek_audit?: string;
+    no_kka?: string | null;
+    tahun_anggaran?: number;
+  } | null;
+}
+
+export interface MasterPayload {
+  sesi_id: number;
+  tipe: MasterKkaTipe;
+  judul: string;
+  narasi?: string | null;
+  fisik?: MasterFisikRow[];
 }

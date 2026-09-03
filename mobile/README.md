@@ -12,8 +12,11 @@ Dibangun dengan **Expo (React Native) + TypeScript**, data **sinkron langsung de
 - ✍️ Buat / Edit / Hapus sesi audit (pilih kecamatan → desa → bidang → sub bidang)
 - 💰 Rincian belanja: tambah/edit/hapus, otomatis hitung selisih
 - 📎 Lampiran: unggah dari galeri/file (PDF, Excel, JPG, PNG), buka & hapus
-- 📈 Rekapitulasi per desa & per bidang dengan filter tahun
+- 📈 Rekapitulasi per desa, per bidang, & per sub bidang (filter tahun, kecamatan, bidang) — angka persis sama dengan web
 - 👤 Profil: ubah profil, ganti password, ganti URL server, keluar
+- 🏘️ **Manajemen Desa** (admin): CRUD kecamatan & desa/kepenghuluan
+- 👥 **Manajemen Pengguna** (admin): tambah/ubah/nonaktifkan/hapus akun
+- 📋 **Master KKA** (admin): KKP Standar, KKA Fisik (auto-hitung volume), KKA Sketsa/Foto
 
 ## Menjalankan di HP (Expo Go)
 

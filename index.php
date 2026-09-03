@@ -111,6 +111,11 @@ try {
         exit;
     }
 
+    if ($resource === 'master') {
+        require __DIR__ . '/../../src/api/MasterKkaApi.php';
+        exit;
+    }
+
     api_response(404, false, 'Endpoint tidak ditemukan: ' . $path);
 
 } catch (Throwable $e) {

@@ -72,7 +72,7 @@ if ($resource === 'users') {
 }
 
 if ($resource === 'profile') {
-    if ($method === 'GET' || $method === 'POST') {
+    if (in_array($method, ['GET', 'POST', 'PUT'], true)) {
         $profile = DB::one('
             SELECT id, nama, email, role, nip, jabatan, is_active, created_at
             FROM kka_users WHERE id = ?

@@ -212,7 +212,7 @@ export default function SesiDetailScreen() {
 
   const { sesi, rincian, lampiran, shared_with: shared } = detail;
   const totals = detail.totals;
-  const totalSelisih = toNum(totals.realisasi) - toNum(totals.dikwitansi);
+  const totalSelisih = toNum(totals.dikwitansi) - toNum(totals.realisasi);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -255,7 +255,7 @@ export default function SesiDetailScreen() {
         <Row>
           <MiniStat label="Realisasi" value={fmtIDR(totals.realisasi)} color={colors.success} />
           <MiniStat
-            label="Selisih (R−D)"
+            label="Selisih (D−R)"
             value={fmtIDR(totalSelisih)}
             color={totalSelisih >= 0 ? colors.success : colors.danger}
           />
@@ -268,7 +268,7 @@ export default function SesiDetailScreen() {
         <SectionTitle>Rincian Belanja ({rincian.length})</SectionTitle>
         {rincian.length ? (
           rincian.map((r, i) => {
-            const selisih = toNum(r.realisasi) - toNum(r.biaya_dikwitansi);
+            const selisih = toNum(r.biaya_dikwitansi) - toNum(r.realisasi);
             return (
               <Card key={r.id} style={{ paddingVertical: spacing.md }}>
                 <Text style={{ fontWeight: '700', color: colors.text }}>
@@ -278,7 +278,7 @@ export default function SesiDetailScreen() {
                 <Text style={{ color: colors.muted, fontSize: 12 }}>Dikwitansi: {fmtIDR(r.biaya_dikwitansi)}</Text>
                 <Text style={{ color: colors.muted, fontSize: 12 }}>Realisasi: {fmtIDR(r.realisasi)}</Text>
                 <Text style={{ color: selisih >= 0 ? colors.success : colors.danger, fontSize: 12, fontWeight: '700' }}>
-                  Selisih: {fmtIDR(selisih)}
+                  Selisih (D−R): {fmtIDR(selisih)}
                 </Text>
                 {r.penerima ? <Text style={{ color: colors.muted, fontSize: 12 }}>Penerima: {r.penerima}</Text> : null}
                 {r.keterangan ? <Text style={{ color: colors.muted, fontSize: 12 }}>{r.keterangan}</Text> : null}
@@ -345,9 +345,11 @@ export default function SesiDetailScreen() {
           </>
         ) : null}
 
-        <View style={{ flexDirection: 'row', gap: spacing.md, marginTop: spacing.sm, marginBottom: spacing.xl }}>
-          <Button title="Edit Sesi" variant="outline" onPress={() => navigation.navigate('SesiForm', { id: sesiId })} style={{ flex: 1 }} />
-          <Button title="Hapus Sesi" variant="danger" onPress={confirmDeleteSesi} style={{ flex: 1 }} />
+        <SectionTitle>Aksi</SectionTitle>
+        <View style={{ flexDirection: 'row', gap: spacing.md, marginTop: spacing.sm, marginBottom: spacing.lg, flexWrap: 'wrap' }}>
+          <Button title="Edit Sesi" variant="outline" onPress={() => navigation.navigate('SesiForm', { id: sesiId })} style={{ flexGrow: 1 }} />
+          <Button title="Master KKA" variant="outline" onPress={() => navigation.navigate('MasterKkaForm', { sesiId })} style={{ flexGrow: 1 }} />
+          <Button title="Hapus Sesi" variant="danger" onPress={confirmDeleteSesi} style={{ flexGrow: 1 }} />
         </View>
       </Screen>
 

@@ -40,7 +40,29 @@ CREATE TABLE IF NOT EXISTS `kka_sesi_share` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ```
 
-## 3. Catatan bug API yang perlu diperbaiki di backend
+## 3. Migrasi Master KKA (menu baru di mobile)
+
+Jalankan `../database/migrasi_master_kka.sql` **sekali** di phpMyAdmin.
+Bila tabel `kka_master*` sudah dibuat oleh web v13 dengan skema berbeda,
+**jangan** jalankan file ini — kirimkan `migration_master_kka.sql` dari server
+kepada developer agar disamakan.
+
+## 4. File API yang wajib di-update di server
+
+Setelah pull, **unggah ulang** file berikut ke folder API di server
+(lokasi file `AuthApi.php` saat ini, umumnya `src/api/`, plus `index.php` di
+folder front-controller-nya):
+
+| File | Perubahan |
+|---|---|
+| `RekapApi.php` | 🔴 FIX: jumlah sesi/pagu berlipat karena join rincian (ini penyebab 27 → 69, 9 → 19) + filter kecamatan/bidang/sub bidang + data `per_grup` |
+| `UsersApi.php` | 🔴 FIX: `PUT /profile` & `PUT /profile/password` kini berfungsi (sebelumnya selalu 405) |
+| `RincianApi.php` | 🔴 FIX: auditor penerima sesi bersama kini bisa edit/hapus rincian |
+| `MasterApi.php` | ✅ Tambah: update & hapus kecamatan |
+| `MasterKkaApi.php` | 🆕 ENDPOINT `/master` (list, buat, edit, hapus, foto) |
+| `index.php` | 🆕 Route `/master` |
+
+## 5. Catatan bug API yang perlu diperbaiki di backend
 
 Aplikasi ini sudah dibuat "defensif" (pesan error jelas), tapi agar fitur berikut
 berjalan penuh di backend:

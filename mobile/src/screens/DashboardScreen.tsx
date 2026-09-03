@@ -9,7 +9,7 @@ import { isUnauthorized } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { colors, spacing } from '../theme';
 import { fmtIDR, fmtNum, fmtPercent } from '../utils/format';
-import { Badge, Card, ErrorView, Loading, Row, Screen, SectionTitle, StatCard } from '../components/ui';
+import { Badge, Button, Card, ErrorView, Loading, Row, Screen, SectionTitle, StatCard } from '../components/ui';
 import type { DashboardData, RekapData } from '../types';
 import type { RootStackParamList } from '../navigation';
 
@@ -70,9 +70,12 @@ export default function DashboardScreen() {
           setRefreshing(false);
         }}
       >
-        <Text style={{ fontSize: 22, fontWeight: '900', color: colors.text }}>
-          Halo, {user?.nama ?? 'Auditor'} 👋
-        </Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={{ fontSize: 22, fontWeight: '900', color: colors.text, flex: 1 }}>
+            Halo, {user?.nama ?? 'Auditor'} 👋
+          </Text>
+          <Button title="+ Buat Sesi" small onPress={() => navigation.navigate('SesiForm', {})} />
+        </View>
         <Text style={{ color: colors.muted, marginBottom: spacing.lg }}>
           {user?.jabatan ? `${user.jabatan} · ` : ''}Data sinkron dengan server KKA.
         </Text>
