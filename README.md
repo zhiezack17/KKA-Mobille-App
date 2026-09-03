@@ -109,3 +109,14 @@ Inspektorat Kabupaten Rokan Hilir
 inspektorat@rohilkab.go.id
 
 © <?= date('Y') ?> Pemerintah Kabupaten Rokan Hilir
+
+---
+
+## 📱 Aplikasi Mobile (KKA Mobile)
+
+Aplikasi mobile resmi ada di folder **`mobile/`** — project **Expo (React Native) + TypeScript**,
+data **sinkron langsung dengan API live** (`https://kka.arsipdigital-inspektorat.com/api`).
+
+- Jalankan: `cd mobile && npm install && npx expo start` → scan QR dengan **Expo Go** (harus versi terbaru).
+- Build APK: `cd mobile && npx eas-cli build --platform android --profile preview`
+- Selengkapnya baca `mobile/README.md` dan `mobile/backend-notes.md` (SQL tabel `kka_api_tokens` & `kka_sesi_share` yang wajib ada di server).
