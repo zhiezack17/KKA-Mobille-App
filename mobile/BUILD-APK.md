@@ -4,6 +4,11 @@ Aplikasi siap di-build menjadi **APK Android** sehingga bisa diinstall langsung
 di HP auditor **tanpa Expo Go**. Konfigurasi sudah disiapkan di `eas.json`
 (profile `preview` = APK internal) dan `app.json` (package `id.go.rohil.kka.mobile`).
 
+> ⚠️ Jika build gagal dengan **`Received status code 429 from server: Too Many Requests`**
+> (Maven Central), itu **bukan** kesalahan project — Maven sedang menolak
+> permintaan sementara (rate limit). Cukup tunggu 5–15 menit lalu ulangi perintah
+> `eas build` (retry biasa berhasil pada percobaan ke-2/3). Jangan ubah kode.
+
 ## Prasyarat (sekali saja)
 - Akun Expo gratis: https://expo.dev/signup (atau login jika sudah punya)
 - Node.js terpasang (sudah)
