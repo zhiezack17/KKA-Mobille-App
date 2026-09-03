@@ -40,9 +40,10 @@ Kalau sudah upload manual ke `/tmp/KKA-Update-main.zip`, cukup jalankan:
 bash restore-master-kka-aapanel.sh
 ```
 
-> Script tersedia di repo ini (`restore-master-kka-aapanel.sh`). Kalau ingin
-> menyalin langsung dari sini ke server, salin isi file tersebut ke
-> `/tmp/restore-master-kka-aapanel.sh` lalu `bash /tmp/restore-master-kka-aapanel.sh`.
+> Script tersedia di repo ini (`restore-master-kka-aapanel.sh`). Versi terbaru
+> **OTOMATIS mencari folder situs KKA** di `/www/wwwroot` (tidak perlu menebak
+> nama folder — di server Anda folder KKA belum tentu
+> `/www/wwwroot/kka.arsipdigital-inspektorat.com`).
 
 ## 3. Yang dilakukan script (rangkuman)
 
