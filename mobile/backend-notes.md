@@ -43,9 +43,14 @@ CREATE TABLE IF NOT EXISTS `kka_sesi_share` (
 ## 3. Migrasi Master KKA (menu baru di mobile)
 
 Jalankan `../database/migrasi_master_kka.sql` **sekali** di phpMyAdmin.
-Bila tabel `kka_master*` sudah dibuat oleh web v13 dengan skema berbeda,
-**jangan** jalankan file ini — kirimkan `migration_master_kka.sql` dari server
-kepada developer agar disamakan.
+**File ini sekarang = skema ASLI update web v13** (dipulihkan dari repo
+`KKA-Update`), dengan kolom:
+`kka_master` (no_kka, ref_pka, narasi, pendamping, ketua_tim, pendamping_nip,
+ketua_tim_nip, tanggal_dok), `kka_master_fisik` (sta, jarak, lebar_i,
+lebar_ii, tebal, volume), `kka_master_foto` (urutan, nama_asli, nama_file...).
+
+Untuk memulihkan menu Master KKA di WEB, pakai `../restore-master-kka-aapanel.sh`
+(lihat `../DEPLOY-AAPANEL.md`).
 
 ## 4. File API yang wajib di-update di server
 

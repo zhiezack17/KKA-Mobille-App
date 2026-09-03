@@ -243,8 +243,8 @@ export interface MasterFisikRow {
   id?: number;
   sta?: string | null;
   jarak?: number | string | null;
-  lebar1?: number | string | null;
-  lebar2?: number | string | null;
+  lebar_i?: number | string | null;
+  lebar_ii?: number | string | null;
   tebal?: number | string | null;
   volume?: number | string | null;
   keterangan?: string | null;
@@ -267,13 +267,19 @@ export interface MasterKka {
   id: number;
   tipe: MasterKkaTipe;
   judul: string;
-  narasi?: string | null;
   sesi_id: number;
-  sesi?: Sesi | null;
+  no_kka?: string | null;
+  ref_pka?: string | null;
+  narasi?: string | null;
+  pendamping?: string | null;
+  ketua_tim?: string | null;
+  pendamping_nip?: string | null;
+  ketua_tim_nip?: string | null;
+  tanggal_dok?: string | null;
   objek_audit?: string;
-  desa?: string;
-  kecamatan?: string;
-  bidang?: string;
+  desa_nama?: string;
+  kecamatan_nama?: string;
+  tahun_anggaran?: number;
   jumlah_fisik?: number;
   jumlah_foto?: number;
   created_at?: string;
@@ -294,7 +300,14 @@ export interface MasterKkaDetail extends Omit<MasterKka, 'sesi'> {
 export interface MasterPayload {
   sesi_id: number;
   tipe: MasterKkaTipe;
-  judul: string;
+  judul?: string;
+  no_kka?: string | null;
+  ref_pka?: string | null;
   narasi?: string | null;
+  pendamping?: string | null;
+  ketua_tim?: string | null;
+  pendamping_nip?: string | null;
+  ketua_tim_nip?: string | null;
+  tanggal_dok?: string | null;
   fisik?: MasterFisikRow[];
 }

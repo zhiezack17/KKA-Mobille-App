@@ -1,6 +1,16 @@
 <?php
 declare(strict_types=1);
 
+/**
+ * MasterKkaApi - REST API untuk menu Master KKA (mobile).
+ * Skema tabel DISAMAKAN dengan update web v13 (KKA-Update / server live):
+ *   kka_master        : sesi_id, tipe, judul, no_kka, ref_pka, narasi,
+ *                       pendamping, ketua_tim, pendamping_nip, ketua_tim_nip,
+ *                       tanggal_dok, created_by
+ *   kka_master_fisik  : urutan, sta, jarak, lebar_i, lebar_ii, tebal, volume, keterangan
+ *   kka_master_foto   : urutan, nama_asli, nama_file, mime_type, ukuran, keterangan
+ */
+
 global $apiAuth, $method, $resource, $subRes1, $subRes2, $subRes3;
 
 $user = $apiAuth->require();
@@ -20,13 +30,13 @@ function mka_tables_ok(): bool {
 function mka_require_tables(): void {
     if (!mka_tables_ok()) {
         api_response(501, false,
-            'Tabel Master KKA belum tersedia. Jalankan database/migrasi_master_kka.sql di phpMyAdmin '
-            . '(bila tabel sudah ada dari web v13 dengan kolom berbeda, kirim skema ke developer).');
+            'Tabel Master KKA belum tersedia di server. Jalankan database/migrasi_master_kka.sql '
+            . '(skema v13) di phpMyAdmin atau terminal aaPanel.');
     }
 }
 
 function mka_volume(array $r): float {
-    $lebar = (float)($r['lebar1'] ?? 0) + (float)($r['lebar2'] ?? 0);
+    $lebar = (float)($r['lebar_i'] ?? 0) + (float)($r['lebar_ii'] ?? 0);
     $jarak = (float)($r['jarak'] ?? 0);
     $tebal = (float)($r['tebal'] ?? 0);
     if ($jarak <= 0) return 0;
@@ -42,6 +52,31 @@ function mka_sesi(bool $owned = true): ?array {
         api_response(403, false, 'Anda tidak memiliki akses ke sesi ini');
     }
     return $sesi;
+}
+
+function mka_fisik_payload(array $input): array {
+    $rows = [];
+    if (empty($input['fisik']) || !is_array($input['fisik'])) return $rows;
+    $urutan = 1;
+    foreach ($input['fisik'] as $row) {
+        if (!is_array($row)) continue;
+        $row['jarak']   = (float)($row['jarak'] ?? 0);
+        $row['lebar_i'] = (float)($row['lebar_i'] ?? 0);
+        $row['lebar_ii']= (float)($row['lebar_ii'] ?? 0);
+        $row['tebal']   = (float)($row['tebal'] ?? 0);
+        if ($row['jarak'] == 0 && $row['lebar_i'] == 0 && $row['lebar_ii'] == 0 && $row['tebal'] == 0) continue;
+        $rows[] = [
+            'urutan'     => $urutan++,
+            'sta'        => !empty($row['sta']) ? trim((string)$row['sta']) : null,
+            'jarak'      => $row['jarak'],
+            'lebar_i'    => $row['lebar_i'],
+            'lebar_ii'   => $row['lebar_ii'],
+            'tebal'      => $row['tebal'],
+            'volume'     => mka_volume($row),
+            'keterangan' => !empty($row['keterangan']) ? trim((string)$row['keterangan']) : null,
+        ];
+    }
+    return $rows;
 }
 
 if ($resource !== 'master') {
@@ -63,16 +98,17 @@ if ($subRes1 === null && $method === 'GET') {
     if ($q !== '')   { $filters .= ' AND m.judul LIKE ?'; $fp[] = "%$q%"; }
 
     $rows = DB::all("
-        SELECT m.id, m.tipe, m.judul, m.narasi, m.created_at, m.created_by,
-               s.id AS sesi_id, s.objek_audit,
-               d.nama AS desa, k.nama AS kecamatan, b.nama AS bidang,
+        SELECT m.id, m.sesi_id, m.tipe, m.judul, m.no_kka, m.ref_pka, m.narasi,
+               m.pendamping, m.ketua_tim, m.pendamping_nip, m.ketua_tim_nip,
+               m.tanggal_dok, m.created_by, m.created_at, m.updated_at,
+               s.objek_audit, s.tahun_anggaran, s.semester,
+               d.nama AS desa_nama, k.nama AS kecamatan_nama,
                (SELECT COUNT(*) FROM kka_master_fisik f WHERE f.master_id = m.id) AS jumlah_fisik,
                (SELECT COUNT(*) FROM kka_master_foto p WHERE p.master_id = m.id) AS jumlah_foto
         FROM kka_master m
         JOIN kka_sesi s ON s.id = m.sesi_id
         JOIN kka_desa d ON d.id = s.desa_id
         JOIN kka_kecamatan k ON k.id = d.kecamatan_id
-        JOIN kka_bidang b ON b.id = s.bidang_id
         WHERE $filters $ow
         ORDER BY m.created_at DESC
     ", array_merge($fp, $op));
@@ -85,7 +121,6 @@ if ($subRes1 === null && $method === 'POST') {
     $err = api_validate($input, [
         'sesi_id' => 'required|numeric',
         'tipe'    => 'required',
-        'judul'   => 'required',
     ]);
     if ($err) api_response(422, false, $err);
     $tipe = trim((string)$input['tipe']);
@@ -95,33 +130,30 @@ if ($subRes1 === null && $method === 'POST') {
     $GLOBALS['_mka_sesi_id'] = (int)$input['sesi_id'];
     mka_sesi(true);
 
+    $judul = trim((string)($input['judul'] ?? ''));
+    if ($judul === '') {
+        $judul = $tipe === 'standar' ? 'KKP Standar (Narasi Audit)'
+            : ($tipe === 'fisik' ? 'KKA Fisik (Pengukuran)' : 'KKA Sketsa / Foto Lapangan');
+    }
+
     $masterId = DB::insert('kka_master', [
-        'sesi_id'    => (int)$input['sesi_id'],
-        'tipe'       => $tipe,
-        'judul'      => trim((string)$input['judul']),
-        'narasi'     => !empty($input['narasi']) ? trim((string)$input['narasi']) : null,
-        'created_by' => (int)$apiAuth->id(),
+        'sesi_id'         => (int)$input['sesi_id'],
+        'tipe'            => $tipe,
+        'judul'           => $judul,
+        'no_kka'          => !empty($input['no_kka']) ? trim((string)$input['no_kka']) : null,
+        'ref_pka'         => !empty($input['ref_pka']) ? trim((string)$input['ref_pka']) : null,
+        'narasi'          => !empty($input['narasi']) ? trim((string)$input['narasi']) : null,
+        'pendamping'      => !empty($input['pendamping']) ? trim((string)$input['pendamping']) : null,
+        'ketua_tim'       => !empty($input['ketua_tim']) ? trim((string)$input['ketua_tim']) : null,
+        'pendamping_nip'  => !empty($input['pendamping_nip']) ? trim((string)$input['pendamping_nip']) : null,
+        'ketua_tim_nip'   => !empty($input['ketua_tim_nip']) ? trim((string)$input['ketua_tim_nip']) : null,
+        'tanggal_dok'     => !empty($input['tanggal_dok']) ? $input['tanggal_dok'] : null,
+        'created_by'      => (int)$apiAuth->id(),
     ]);
 
-    if ($tipe === 'fisik' && !empty($input['fisik']) && is_array($input['fisik'])) {
-        $urutan = 1;
-        foreach ($input['fisik'] as $row) {
-            if (!is_array($row)) continue;
-            $row['jarak']  = (float)($row['jarak'] ?? 0);
-            $row['lebar1'] = (float)($row['lebar1'] ?? 0);
-            $row['lebar2'] = (float)($row['lebar2'] ?? 0);
-            $row['tebal']  = (float)($row['tebal'] ?? 0);
-            DB::insert('kka_master_fisik', [
-                'master_id'  => $masterId,
-                'sta'        => !empty($row['sta']) ? trim((string)$row['sta']) : null,
-                'jarak'      => $row['jarak'],
-                'lebar1'     => $row['lebar1'],
-                'lebar2'     => $row['lebar2'],
-                'tebal'      => $row['tebal'],
-                'volume'     => mka_volume($row),
-                'keterangan' => !empty($row['keterangan']) ? trim((string)$row['keterangan']) : null,
-                'urutan'     => $urutan++,
-            ]);
+    if ($tipe === 'fisik') {
+        foreach (mka_fisik_payload($input) as $row) {
+            DB::insert('kka_master_fisik', array_merge(['master_id' => $masterId], $row));
         }
     }
 
@@ -140,10 +172,9 @@ if ($subRes1 !== null && ctype_digit((string)$subRes1) && $subRes2 === null) {
     if ($method === 'GET') {
         $fisik = DB::all('SELECT * FROM kka_master_fisik WHERE master_id = ? ORDER BY urutan, id', [$id]);
         $foto = DB::all("
-            SELECT p.*,
-                   CONCAT(?, '/uploads/master/', p.nama_file) AS file_url
+            SELECT p.*, CONCAT(?, '/uploads/master/', p.nama_file) AS file_url
             FROM kka_master_foto p
-            WHERE p.master_id = ? ORDER BY p.created_at DESC
+            WHERE p.master_id = ? ORDER BY p.urutan, p.id
         ", [rtrim($GLOBALS['cfg']['app_url'], '/'), $id]);
         $detail = $master;
         $detail += [
@@ -161,31 +192,22 @@ if ($subRes1 !== null && ctype_digit((string)$subRes1) && $subRes2 === null) {
 
     if ($method === 'PUT') {
         $data = [
-            'judul'  => !empty($input['judul']) ? trim((string)$input['judul']) : $master['judul'],
-            'narasi' => array_key_exists('narasi', $input) ? (trim((string)$input['narasi']) ?: null) : $master['narasi'],
+            'judul'          => !empty($input['judul']) ? trim((string)$input['judul']) : $master['judul'],
+            'no_kka'         => array_key_exists('no_kka', $input) ? (trim((string)$input['no_kka']) ?: null) : $master['no_kka'],
+            'ref_pka'        => array_key_exists('ref_pka', $input) ? (trim((string)$input['ref_pka']) ?: null) : $master['ref_pka'],
+            'narasi'         => array_key_exists('narasi', $input) ? (trim((string)$input['narasi']) ?: null) : $master['narasi'],
+            'pendamping'     => array_key_exists('pendamping', $input) ? (trim((string)$input['pendamping']) ?: null) : $master['pendamping'],
+            'ketua_tim'      => array_key_exists('ketua_tim', $input) ? (trim((string)$input['ketua_tim']) ?: null) : $master['ketua_tim'],
+            'pendamping_nip' => array_key_exists('pendamping_nip', $input) ? (trim((string)$input['pendamping_nip']) ?: null) : $master['pendamping_nip'],
+            'ketua_tim_nip'  => array_key_exists('ketua_tim_nip', $input) ? (trim((string)$input['ketua_tim_nip']) ?: null) : $master['ketua_tim_nip'],
+            'tanggal_dok'    => array_key_exists('tanggal_dok', $input) ? ($input['tanggal_dok'] ?: null) : $master['tanggal_dok'],
         ];
         DB::update('kka_master', $data, ['id' => $id]);
 
         if ($master['tipe'] === 'fisik' && isset($input['fisik']) && is_array($input['fisik'])) {
             DB::q('DELETE FROM kka_master_fisik WHERE master_id = ?', [$id]);
-            $urutan = 1;
-            foreach ($input['fisik'] as $row) {
-                if (!is_array($row)) continue;
-                $row['jarak']  = (float)($row['jarak'] ?? 0);
-                $row['lebar1'] = (float)($row['lebar1'] ?? 0);
-                $row['lebar2'] = (float)($row['lebar2'] ?? 0);
-                $row['tebal']  = (float)($row['tebal'] ?? 0);
-                DB::insert('kka_master_fisik', [
-                    'master_id'  => $id,
-                    'sta'        => !empty($row['sta']) ? trim((string)$row['sta']) : null,
-                    'jarak'      => $row['jarak'],
-                    'lebar1'     => $row['lebar1'],
-                    'lebar2'     => $row['lebar2'],
-                    'tebal'      => $row['tebal'],
-                    'volume'     => mka_volume($row),
-                    'keterangan' => !empty($row['keterangan']) ? trim((string)$row['keterangan']) : null,
-                    'urutan'     => $urutan++,
-                ]);
+            foreach (mka_fisik_payload($input) as $row) {
+                DB::insert('kka_master_fisik', array_merge(['master_id' => $id], $row));
             }
         }
         api_response(200, true, 'Master KKA diperbarui');
@@ -216,7 +238,7 @@ if ($subRes1 !== null && ctype_digit((string)$subRes1) && $subRes2 === 'foto' &&
         api_response(422, false, 'File foto wajib diupload');
     }
     $dir = $GLOBALS['cfg']['upload_dir'] . '/master';
-    if (!is_dir($dir)) @mkdir($dir, 0755, true);
+    if (!is_dir($dir)) @mkdir($dir, 0775, true);
 
     $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     $maxSize = $GLOBALS['cfg']['max_upload_mb'] * 1024 * 1024;
@@ -245,14 +267,16 @@ if ($subRes1 !== null && ctype_digit((string)$subRes1) && $subRes2 === 'foto' &&
     }
 
     $ext = str_replace('image/', '', $mime);
-    $namaFile = 'mka_' . $id . '_' . substr(bin2hex(random_bytes(8)), 0, 10) . '.' . $ext;
-    $target = $dir . '/' . $namaFile;
+    $newName = 'mfoto_' . $id . '_' . bin2hex(random_bytes(6)) . '.' . $ext;
+    $target = $dir . '/' . $newName;
     file_put_contents($target, $content);
 
+    $next = (int)DB::scalar('SELECT COALESCE(MAX(urutan),0)+1 FROM kka_master_foto WHERE master_id = ?', [$id]);
     $fotoId = DB::insert('kka_master_foto', [
         'master_id'  => $id,
-        'nama_file'  => $namaFile,
+        'urutan'     => $next,
         'nama_asli'  => $namaAsli,
+        'nama_file'  => $newName,
         'mime_type'  => $mime,
         'ukuran'     => strlen($content),
         'keterangan' => !empty($input['keterangan']) ? trim((string)$input['keterangan']) : null,
@@ -260,8 +284,8 @@ if ($subRes1 !== null && ctype_digit((string)$subRes1) && $subRes2 === 'foto' &&
 
     api_response(201, true, 'Foto diunggah', [
         'id'        => $fotoId,
-        'nama_file' => $namaFile,
-        'file_url'  => rtrim($GLOBALS['cfg']['app_url'], '/') . '/uploads/master/' . $namaFile,
+        'nama_file' => $newName,
+        'file_url'  => rtrim($GLOBALS['cfg']['app_url'], '/') . '/uploads/master/' . $newName,
     ]);
 }
 

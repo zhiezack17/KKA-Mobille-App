@@ -23,7 +23,7 @@ const TIPE_LABEL: Record<MasterKkaTipe, string> = {
 function volume(row: MasterFisikRow): number {
   const jarak = toNum(row.jarak);
   if (jarak <= 0) return 0;
-  return ((toNum(row.lebar1) + toNum(row.lebar2)) / 2) * jarak * toNum(row.tebal);
+  return ((toNum(row.lebar_i) + toNum(row.lebar_ii)) / 2) * jarak * toNum(row.tebal);
 }
 
 export default function MasterKkaFormScreen() {
@@ -41,6 +41,13 @@ export default function MasterKkaFormScreen() {
   const [sesiId, setSesiId] = useState<number | null>(route.params?.sesiId ?? null);
   const [tipe, setTipe] = useState<MasterKkaTipe>('standar');
   const [judul, setJudul] = useState('');
+  const [noKka, setNoKka] = useState('');
+  const [refPka, setRefPka] = useState('');
+  const [tanggalDok, setTanggalDok] = useState('');
+  const [pendamping, setPendamping] = useState('');
+  const [ketuaTim, setKetuaTim] = useState('');
+  const [pendampingNip, setPendampingNip] = useState('');
+  const [ketuaTimNip, setKetuaTimNip] = useState('');
   const [narasi, setNarasi] = useState('');
   const [fisik, setFisik] = useState<MasterFisikRow[]>([]);
 
@@ -55,6 +62,13 @@ export default function MasterKkaFormScreen() {
           setSesiId(d.sesi_id);
           setTipe(d.tipe);
           setJudul(d.judul ?? '');
+          setNoKka(d.no_kka ?? '');
+          setRefPka(d.ref_pka ?? '');
+          setTanggalDok(d.tanggal_dok ?? '');
+          setPendamping(d.pendamping ?? '');
+          setKetuaTim(d.ketua_tim ?? '');
+          setPendampingNip(d.pendamping_nip ?? '');
+          setKetuaTimNip(d.ketua_tim_nip ?? '');
           setNarasi(d.narasi ?? '');
           setFisik(d.fisik?.map((r) => ({ ...r })) ?? []);
         } else if (route.params?.sesiId && !sesiId) {
@@ -106,6 +120,13 @@ export default function MasterKkaFormScreen() {
         sesi_id: sesiId,
         tipe,
         judul: judul.trim(),
+        no_kka: noKka.trim() || null,
+        ref_pka: refPka.trim() || null,
+        tanggal_dok: tanggalDok.trim() || null,
+        pendamping: pendamping.trim() || null,
+        ketua_tim: ketuaTim.trim() || null,
+        pendamping_nip: pendampingNip.trim() || null,
+        ketua_tim_nip: ketuaTimNip.trim() || null,
         narasi: tipe === 'standar' ? narasi.trim() || null : null,
         fisik: tipe === 'fisik' ? fisik : undefined,
       };
@@ -162,6 +183,13 @@ export default function MasterKkaFormScreen() {
 
         <View style={{ height: spacing.md }} />
         <Input label="Judul Dokumen *" value={judul} onChangeText={setJudul} placeholder="Contoh: KKA Fisik Jalan... (boleh sama dengan objek)" />
+        <Input label="No. KKA" value={noKka} onChangeText={setNoKka} />
+        <Input label="Ref. PKA" value={refPka} onChangeText={setRefPka} />
+        <Input label="Tanggal Dokumen (YYYY-MM-DD)" value={tanggalDok} onChangeText={setTanggalDok} placeholder="2026-09-03" />
+        <Input label="Pendamping" value={pendamping} onChangeText={setPendamping} />
+        <Input label="NIP Pendamping" value={pendampingNip} onChangeText={setPendampingNip} />
+        <Input label="Ketua Tim" value={ketuaTim} onChangeText={setKetuaTim} />
+        <Input label="NIP Ketua Tim" value={ketuaTimNip} onChangeText={setKetuaTimNip} />
 
         {tipe === 'standar' ? (
           <Input
@@ -188,8 +216,8 @@ export default function MasterKkaFormScreen() {
               </View>
               <Input label="Jarak (m)" value={String(row.jarak ?? '')} onChangeText={(v) => updateRow(i, 'jarak', v)} keyboardType="decimal-pad" />
               <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-                <Input label="Lebar I (m)" value={String(row.lebar1 ?? '')} onChangeText={(v) => updateRow(i, 'lebar1', v)} keyboardType="decimal-pad" style={{ flex: 1 }} />
-                <Input label="Lebar II (m)" value={String(row.lebar2 ?? '')} onChangeText={(v) => updateRow(i, 'lebar2', v)} keyboardType="decimal-pad" style={{ flex: 1 }} />
+                <Input label="Lebar I (m)" value={String(row.lebar_i ?? '')} onChangeText={(v) => updateRow(i, 'lebar_i', v)} keyboardType="decimal-pad" style={{ flex: 1 }} />
+                <Input label="Lebar II (m)" value={String(row.lebar_ii ?? '')} onChangeText={(v) => updateRow(i, 'lebar_ii', v)} keyboardType="decimal-pad" style={{ flex: 1 }} />
               </View>
               <View style={{ flexDirection: 'row', gap: spacing.sm }}>
                 <Input label="Tebal (m)" value={String(row.tebal ?? '')} onChangeText={(v) => updateRow(i, 'tebal', v)} keyboardType="decimal-pad" style={{ flex: 1 }} />

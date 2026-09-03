@@ -98,7 +98,7 @@ export default function MasterKkaListScreen() {
               </View>
               <Text style={{ color: colors.muted, fontSize: 12, marginTop: 4 }}>{item.objek_audit}</Text>
               <Text style={{ color: colors.muted, fontSize: 12 }}>
-                {item.desa} · {item.bidang}
+                {item.desa_nama ?? '-'} · {item.kecamatan_nama ?? '-'}
               </Text>
               <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm }}>
                 <Badge>{item.jumlah_fisik ?? 0} baris fisik</Badge>

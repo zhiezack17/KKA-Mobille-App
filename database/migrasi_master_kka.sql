@@ -1,58 +1,60 @@
--- ==================================================================
--- MIGRASI MASTER KKA (untuk aplikasi mobile)
--- Jalankan SEKALI di phpMyAdmin (pilih database KKA -> tab SQL).
--- Aman: hanya menambah tabel, tidak mengubah/menghapus data lama.
--- ==================================================================
--- CATATAN: bila tabel kka_master / kka_master_fisik / kka_master_foto
--- SUDAH dibuat oleh update web v13 dengan skema berbeda, JANGAN jalankan
--- file ini (CREATE IF NOT EXISTS tidak akan mengubah skema lama).
--- Kirimkan migration_master_kka.sql dari server agar disamakan.
--- ==================================================================
+-- ==========================================================
+-- Migration: Master KKA (KKP Standar Narasi, KKA Fisik, Sketsa/Foto)
+-- Inspektorat Kabupaten Rokan Hilir
+-- ==========================================================
+-- FILE ASLI DARI KKA-Update (update v13) - dipulihkan kembali.
+-- Aman: CREATE TABLE IF NOT EXISTS, TIDAK menghapus data lama.
+-- ==========================================================
 
+-- Tabel induk: 1 Sesi Audit boleh punya banyak dokumen Master KKA
 CREATE TABLE IF NOT EXISTS `kka_master` (
   `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   `sesi_id` INT UNSIGNED NOT NULL,
   `tipe` ENUM('standar','fisik','sketsa') NOT NULL,
   `judul` VARCHAR(255) NOT NULL,
-  `narasi` LONGTEXT DEFAULT NULL,
+  `no_kka` VARCHAR(50) DEFAULT NULL,
+  `ref_pka` VARCHAR(50) DEFAULT NULL,
+  `narasi` MEDIUMTEXT DEFAULT NULL,
+  `pendamping` VARCHAR(150) DEFAULT NULL,
+  `ketua_tim` VARCHAR(150) DEFAULT NULL,
+  `pendamping_nip` VARCHAR(30) DEFAULT NULL,
+  `ketua_tim_nip` VARCHAR(30) DEFAULT NULL,
+  `tanggal_dok` DATE DEFAULT NULL,
   `created_by` INT UNSIGNED DEFAULT NULL,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  KEY `idx_master_sesi` (`sesi_id`),
-  KEY `idx_master_tipe` (`tipe`),
-  CONSTRAINT `fk_master_sesi` FOREIGN KEY (`sesi_id`)
-    REFERENCES `kka_sesi`(`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_master_user` FOREIGN KEY (`created_by`)
-    REFERENCES `kka_users`(`id`) ON DELETE SET NULL
+  CONSTRAINT `fk_master_sesi` FOREIGN KEY (`sesi_id`) REFERENCES `kka_sesi`(`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_master_user` FOREIGN KEY (`created_by`) REFERENCES `kka_users`(`id`) ON DELETE SET NULL,
+  INDEX (`sesi_id`), INDEX (`tipe`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Baris pengukuran fisik (untuk tipe = 'fisik')
 CREATE TABLE IF NOT EXISTS `kka_master_fisik` (
   `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   `master_id` INT UNSIGNED NOT NULL,
+  `urutan` INT NOT NULL DEFAULT 1,
   `sta` VARCHAR(50) DEFAULT NULL,
   `jarak` DECIMAL(12,3) NOT NULL DEFAULT 0,
-  `lebar1` DECIMAL(12,3) NOT NULL DEFAULT 0,
-  `lebar2` DECIMAL(12,3) NOT NULL DEFAULT 0,
+  `lebar_i` DECIMAL(12,3) NOT NULL DEFAULT 0,
+  `lebar_ii` DECIMAL(12,3) NOT NULL DEFAULT 0,
   `tebal` DECIMAL(12,3) NOT NULL DEFAULT 0,
   `volume` DECIMAL(14,3) NOT NULL DEFAULT 0,
   `keterangan` VARCHAR(255) DEFAULT NULL,
-  `urutan` INT NOT NULL DEFAULT 1,
-  KEY `idx_fisik_master` (`master_id`),
-  CONSTRAINT `fk_fisik_master` FOREIGN KEY (`master_id`)
-    REFERENCES `kka_master`(`id`) ON DELETE CASCADE
+  CONSTRAINT `fk_fisik_master` FOREIGN KEY (`master_id`) REFERENCES `kka_master`(`id`) ON DELETE CASCADE,
+  INDEX (`master_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Foto lapangan (untuk tipe = 'sketsa')
 CREATE TABLE IF NOT EXISTS `kka_master_foto` (
   `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   `master_id` INT UNSIGNED NOT NULL,
+  `urutan` INT NOT NULL DEFAULT 1,
+  `nama_asli` VARCHAR(255) NOT NULL,
   `nama_file` VARCHAR(255) NOT NULL,
-  `nama_asli` VARCHAR(255) DEFAULT NULL,
   `mime_type` VARCHAR(100) DEFAULT NULL,
-  `ukuran` INT UNSIGNED NOT NULL DEFAULT 0,
+  `ukuran` INT UNSIGNED DEFAULT 0,
   `keterangan` VARCHAR(255) DEFAULT NULL,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY `uq_foto_file` (`nama_file`),
-  KEY `idx_foto_master` (`master_id`),
-  CONSTRAINT `fk_foto_master` FOREIGN KEY (`master_id`)
-    REFERENCES `kka_master`(`id`) ON DELETE CASCADE
+  CONSTRAINT `fk_foto_master` FOREIGN KEY (`master_id`) REFERENCES `kka_master`(`id`) ON DELETE CASCADE,
+  INDEX (`master_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

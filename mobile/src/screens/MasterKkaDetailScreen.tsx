@@ -7,7 +7,7 @@ import { MasterKkaApi } from '../api/endpoints';
 import { isUnauthorized } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { colors, spacing } from '../theme';
-import { fmtBytes, fmtDateTime, toNum } from '../utils/format';
+import { fmtBytes, fmtDate, fmtDateTime, toNum } from '../utils/format';
 import { Badge, Button, Card, EmptyView, ErrorView, InfoRow, Loading, Screen, SectionTitle } from '../components/ui';
 import type { MasterKkaDetail, MasterKkaTipe } from '../types';
 import type { RootStackParamList } from '../navigation';
@@ -130,8 +130,14 @@ export default function MasterKkaDetailScreen() {
           </Badge>
         </View>
         <InfoRow label="Sesi Audit" value={d.sesi?.objek_audit} bold />
-        <InfoRow label="No. KKA" value={d.sesi?.no_kka} />
+        <InfoRow label="No. KKA" value={d.no_kka ?? d.sesi?.no_kka} />
+        <InfoRow label="Ref. PKA" value={d.ref_pka} />
         <InfoRow label="Tahun" value={d.sesi?.tahun_anggaran} />
+        <InfoRow label="Tanggal Dokumen" value={fmtDate(d.tanggal_dok)} />
+        <InfoRow label="Pendamping" value={d.pendamping} />
+        <InfoRow label="NIP Pendamping" value={d.pendamping_nip} />
+        <InfoRow label="Ketua Tim" value={d.ketua_tim} />
+        <InfoRow label="NIP Ketua Tim" value={d.ketua_tim_nip} />
         <InfoRow label="Dibuat" value={fmtDateTime(d.created_at)} />
       </Card>
 
@@ -155,7 +161,7 @@ export default function MasterKkaDetailScreen() {
                     {r.sta ? `STA ${r.sta}` : `Baris ${i + 1}`}
                   </Text>
                   <Text style={{ color: colors.muted, fontSize: 12 }}>
-                    Jarak {toNum(r.jarak)} m · Lebar {toNum(r.lebar1)} / {toNum(r.lebar2)} m · Tebal {toNum(r.tebal)} m
+                    Jarak {toNum(r.jarak)} m · Lebar {toNum(r.lebar_i)} / {toNum(r.lebar_ii)} m · Tebal {toNum(r.tebal)} m
                   </Text>
                   <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 13 }}>
                     Volume: {toNum(r.volume).toFixed(3)} m³
