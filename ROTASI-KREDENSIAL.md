@@ -1,53 +1,70 @@
 # Rotasi Kredensial KKA (keamanan)
 
-## Kenapa wajib sekarang?
+## Kenapa wajib?
 File `.env` (berisi `DB_PASS` + `ADMIN_PASSWORD`) dan `koneksi.php` (password DB
 hardcode) pernah di-commit ke repo GitHub **publik** (`zhiezack17/KKA-Mobille-App`
 pada commit awal `695ad98`). Siapa pun yang melihat history repo bisa membaca
 kredensial tersebut → **dianggap bocor**. Solusi: ganti password (rotasi).
 
-## Langkah 1: Rotasi password database (di server, terminal aaPanel)
-Jalankan script `rotate-kka-credentials-aapanel.sh` (tersedia di repo ini):
+> Status: rotasi **SUDAH selesai** pada 2026-09-04 — password DB (aaPanel GUI)
+> dan password admin (web Profil) sudah diganti; web & APK tetap jalan.
+
+## Alur yang terbukti benar (urutan penting!)
+
+**Jangan pernah menimpa `.env` sebelum password MySQL benar-benar berhasil
+diganti.** (Pelajaran dari v1: script gagal `ALTER USER` karena user aaPanel
+tidak punya izin, tapi `.env` sudah tertimpa → web putus koneksi.)
+
+### 1. Diagnosa dulu — tidak menampilkan password
+Jalankan dari repo ini (atau tempel baris perintahnya di Terminal aaPanel):
 
 ```bash
-bash rotate-kka-credentials-aapanel.sh
+bash verify-db-connection-aapanel.sh
 ```
 
-Yang dilakukan script (aman & otomatis):
-- Generate password MySQL **baru** (acak 48 karakter)
-- Ganti password user database aplikasi
-- Update `DB_PASS` di `.env`
-- Backup `.env` lama + simpan kredensial baru ke
-  `/www/backup-kka/kka-credentials-<timestamp>.txt` (izin 600, **jangan dibagikan**)
-- Verifikasi koneksi database dengan password baru
-- Nonaktifkan `koneksi.php` di server (pindah ke `koneksi.php.disabled`)
+Hasil yang mungkin:
+| [1] .env sekarang | [2] kredensial baru | [3] backup lama | Arti & aksi |
+|---|---|---|---|
+| ✅ | — | — | Koneksi normal, lanjut ke langkah 3 |
+| ❌ | ✅ | — | MySQL sudah pakai password baru → salin `.env` dari backup |
+| ❌ | ❌ | ✅ | **Kasus khas aaPanel** → lanjut langkah 2 (GUI) |
 
-> Tidak menampilkan password di layar. Baca file kredensial hanya bila perlu:
-> `cat /www/backup-kka/kka-credentials-<timestamp>.txt`
+### 2. Ganti password DB via aaPanel GUI (cara resmi, selalu berhasil)
+1. aaPanel → **Databases** → pilih user aplikasi → **Change Password**
+2. Ambil password baru dari file kredensial (baca di server, **jangan dikirim ke chat**):
+   ```bash
+   cat /www/backup-kka/kka-credentials-<timestamp>.txt   # baris DB_PASS
+   ```
+3. Tempel ke GUI → **Confirm**. Karena `.env` sudah berisi password baru itu,
+   web langsung kembali normal dan rotasi selesai.
+4. Jalankan ulang `verify-db-connection-aapanel.sh` → harus `[1] ✅` **dan** `[2] ✅`.
 
-Jika script gagal di langkah ganti-password (izin MySQL), ganti manual:
-aaPanel → **Databases → MySQL** → user aplikasi → **Change Password**
-(lihat password baru di file kredensial di atas).
-
-## Langkah 2: Rotasi password ADMIN (web)
+### 3. Rotasi password ADMIN (web)
 1. Login web KKA (https://kka.arsipdigital-inspektorat.com)
-2. Klik **Profil** → **Ganti Password** → isi password baru yang kuat.
-3. login ulang. (Password admin tersimpan di tabel `kka_users`, bukan di `.env`
-   — `.env` hanya dipakai installer awal.)
+2. **Profil → Ganti Password** → isi password baru yang kuat → login ulang.
+   (Password admin tersimpan di tabel `kka_users`, bukan di `.env`.)
 
-## Langkah 3: Bersihkan repo Git
-- `.env`, `koneksi.php`, `src.zip`, `error_log` sudah **dilepas dari track Git**
-  (commit terbaru) + masuk `.gitignore` → tidak akan ter-commit lagi.
-- **Opsional (lanjutan): hapus kredensial dari riwayat Git lama** — perlu
-  `git filter-repo`/BFG + force-push ke cabang sesi (mengubah semua hash
-  commit; clone lokal harus di-clone ulang). Tanyakan developer terlebih
-  dahulu — disarankan dilakukan, tapi bisa juga dibiarkan karena password
-  sudah diganti (riwayat lama tak lagi berguna bagi penyusup).
+## Script otomatis (opsional)
+`rotate-kka-credentials-aapanel.sh` **v2** — perbaikan dari v1:
+- Mencoba `ALTER USER` sebagai user aplikasi; jika gagal, mencoba root aaPanel
+  (password dibaca dari `/www/server/panel/data/default.pl`).
+- `.env` **hanya diperbarui setelah ALTER sukses**. Jika keduanya gagal,
+  `.env` tetap utuh dan script menampilkan panduan GUI (langkah 2).
+- Backup `.env` lama + kredensial baru tersimpan di `/www/backup-kka/`
+  (izin 600), dan `koneksi.php` dinonaktifkan bila ada.
 
-## Setelah rotasi — cek akhir
+## Bersihkan repo Git (status sekarang)
+- `.env`, `koneksi.php`, `src.zip`, `error_log` sudah **dilepas dari tracking**
+  (commit `604e6e8`) + ada di `.gitignore` → tidak akan ter-commit lagi.
+- Riwayat commit awal `695ad98` **masih** memuat `.env` lama — sudah tidak
+  berguna karena password dirotasi, tetapi untuk pembersihan penuh diperlukan
+  `git filter-repo` + force-push + clone ulang (mengubah semua hash).
+  Disarankan dilakukan bila repo publik akan dipakai jangka panjang.
+
+## Cek akhir setelah rotasi
 | Cek | Status yang diharapkan |
 |---|---|
 | Web KKA login & menu Master KKA | ✔ tetap jalan |
 | Aplikasi HP (APK) login & data sinkron | ✔ tetap jalan (login ulang) |
-| `SELECT COUNT(*) FROM kka_master` di phpMyAdmin | ≥ 1 (data aman) |
+| `SELECT COUNT(*) FROM kka_master` | ≥ 1 (data aman) |
 | File `.env` di repo | tidak ter-commit; `.env.example` saja |
