@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Text, View, StyleSheet } from 'react-native';
+import { Alert, Image, KeyboardAvoidingView, Platform, Text, View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { api } from '../api/client';
@@ -17,9 +17,6 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [testing, setTesting] = useState(false);
   const [error, setError] = useState('');
-
-  // TODO: ganti dengan logo resmi saat file tersedia
-  const logoLabel = 'KKA';
 
   async function handleLogin() {
     setError('');
@@ -67,7 +64,11 @@ export default function LoginScreen() {
         <View style={styles.content}>
           <View style={styles.hero}>
             <View style={styles.logo}>
-              <Text style={styles.logoText}>{logoLabel}</Text>
+              <Image
+                source={require('../../assets/logo-inspektorat.png')}
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
             </View>
             <Text style={styles.title}>KKA Mobile</Text>
             <Text style={styles.subtitle}>Kertas Kerja Audit · Inspektorat Kabupaten Rokan Hilir</Text>
@@ -159,7 +160,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     elevation: 8,
   },
-  logoText: { color: colors.primaryDarker, fontSize: 28, fontWeight: '900', letterSpacing: 1 },
+  logoImage: { width: 78, height: 78 },
   title: { fontSize: 26, fontWeight: '900', color: colors.white, letterSpacing: 0.5 },
   subtitle: { color: '#A7F3D0', fontSize: 13, textAlign: 'center', marginTop: 6 },
   link: { color: colors.gold, textAlign: 'center', fontSize: 13, fontWeight: '600', marginVertical: spacing.sm },

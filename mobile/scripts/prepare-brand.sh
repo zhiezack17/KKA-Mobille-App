@@ -13,6 +13,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ASSETS="$SCRIPT_DIR/../assets"
 LOGO_IN="$ASSETS/logo-inspektorat.png"
+PYTHON="${PYTHON:-python3}"
 
 if [ ! -f "$LOGO_IN" ]; then
   echo "ERROR: $LOGO_IN tidak ditemukan."
@@ -22,14 +23,28 @@ fi
 
 WORK="/tmp/kka-brand"; rm -rf "$WORK"; mkdir -p "$WORK"
 
-# ---- 1. Logo persegi terpusat (trim tepi transparan) -----------------------
-convert "$LOGO_IN" -trim +repage -resize 512x512 -background none \
+# ---- 1. Bersihkan halo putih tepi (defringe) lalu logo persegi --------------
+# Logo asli 256px punya pinggiran semi-putih bekas anti-aliasing terhadap
+# latar putih. Script Python menghilangkannya; kalau Python tidak ada,
+# fallback ke erosi ImageMagick.
+DEF="$WORK/logo-defringed.png"
+if command -v "$PYTHON" >/dev/null 2>&1 && "$PYTHON" -c "import PIL, numpy" >/dev/null 2>&1; then
+  "$PYTHON" "$SCRIPT_DIR/defringe-logo.py" "$LOGO_IN" "$DEF" >/dev/null 2>&1 || cp "$LOGO_IN" "$DEF"
+else
+  echo "   (defringe dilewati: Pillow/numpy tidak tersedia di $PYTHON)"
+  cp "$LOGO_IN" "$DEF"
+fi
+convert "$DEF" -trim +repage -resize 512x512 -background none \
         -gravity center -extent 512x512 "$WORK/logo-512.png"
 cp "$WORK/logo-512.png" "$ASSETS/logo-512.png"
 
+# ---- 1b. Varian logo lebih besar untuk icon utama (800px) -------------------
+convert "$DEF" -trim +repage -resize 800x800 -background none \
+        -gravity center -extent 800x800 "$WORK/logo-800.png"
+
 # ---- 2. Icon utama 1024px: latar gradien hijau + logo 78% ------------------
 convert -size 1024x1024 gradient:'#065F46-#022C22' \
-        \( "$WORK/logo-512.png" -resize 800x800 \) \
+        \( "$WORK/logo-800.png" \) \
         -gravity center -composite "$ASSETS/icon.png"
 
 # ---- 3. Adaptive icon foreground (zona aman Android = 66%) ----------------
