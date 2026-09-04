@@ -8,6 +8,7 @@ import { DashboardApi, RekapApi } from '../api/endpoints';
 import { isUnauthorized } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { colors, radius, spacing } from '../theme';
+import { APP_VERSION_LABEL } from '../version';
 import { fmtIDR, fmtNum, fmtPercent } from '../utils/format';
 import { Badge, Button, Card, ErrorView, Loading, Row, Screen, SectionTitle, StatCard } from '../components/ui';
 import type { DashboardData, RekapData } from '../types';
@@ -155,6 +156,10 @@ export default function DashboardScreen() {
             <Text style={{ color: colors.muted, textAlign: 'center' }}>Belum ada rekap.</Text>
           </Card>
         )}
+
+        <Text style={{ color: colors.muted, fontSize: 11, textAlign: 'center', marginTop: spacing.sm }}>
+          {APP_VERSION_LABEL}
+        </Text>
       </Screen>
     </SafeAreaView>
   );

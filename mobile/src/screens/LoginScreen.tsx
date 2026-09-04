@@ -6,6 +6,7 @@ import { api } from '../api/client';
 import { getApiUrl, setApiUrl } from '../config';
 import { useAuth } from '../context/AuthContext';
 import { colors, radius, spacing } from '../theme';
+import { APP_VERSION_LABEL } from '../version';
 import { Button, Card, Input } from '../components/ui';
 
 export default function LoginScreen() {
@@ -117,6 +118,8 @@ export default function LoginScreen() {
 
           <Text style={styles.footnote}>
             Pemerintah Kabupaten Rokan Hilir · Inspektorat Daerah
+            {'\n'}
+            {APP_VERSION_LABEL}
           </Text>
         </View>
       </KeyboardAvoidingView>
