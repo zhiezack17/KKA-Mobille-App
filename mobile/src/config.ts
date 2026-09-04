@@ -1,12 +1,9 @@
-import * as SecureStore from 'expo-secure-store';
-
 /**
- * Base URL REST API KKA (sinkron dengan server live).
- * Bisa diganti dari layar Login / Profil, tersimpan aman di perangkat.
+ * Base URL REST API KKA — DIKUNCI ke server produksi.
+ * Tidak bisa diubah dari aplikasi (pengaturan server di Login/Profil
+ * sudah dihapus) supaya APK selalu terhubung ke server resmi.
  */
 export const DEFAULT_API_URL = 'https://kka.arsipdigital-inspektorat.com/api';
-
-const KEY = 'kka_api_url_v1';
 
 let cached: string | null = null;
 
@@ -15,23 +12,13 @@ function normalize(url: string): string {
 }
 
 export async function loadApiUrl(): Promise<string> {
-  if (cached) return cached;
-  try {
-    const saved = await SecureStore.getItemAsync(KEY);
-    cached = normalize(saved || DEFAULT_API_URL) || DEFAULT_API_URL;
-  } catch {
-    cached = DEFAULT_API_URL;
-  }
+  cached = normalize(DEFAULT_API_URL);
   return cached;
 }
 
 export async function setApiUrl(url: string): Promise<string> {
-  cached = normalize(url) || DEFAULT_API_URL;
-  try {
-    await SecureStore.setItemAsync(KEY, cached);
-  } catch {
-    // tetap pakai nilai di memori bila storage gagal
-  }
+  // Diterima untuk kompatibilitas, tapi selalu dipaksa ke server produksi.
+  cached = normalize(DEFAULT_API_URL);
   return cached;
 }
 

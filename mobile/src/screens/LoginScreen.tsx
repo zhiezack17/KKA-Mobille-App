@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import { Alert, Image, KeyboardAvoidingView, Platform, Text, View, StyleSheet } from 'react-native';
+import { Image, KeyboardAvoidingView, Platform, Text, View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { api } from '../api/client';
-import { getApiUrl, setApiUrl } from '../config';
 import { useAuth } from '../context/AuthContext';
 import { colors, radius, spacing } from '../theme';
 import { APP_VERSION_LABEL } from '../version';
@@ -13,10 +11,7 @@ export default function LoginScreen() {
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [serverUrl, setServerUrl] = useState(getApiUrl());
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [testing, setTesting] = useState(false);
   const [error, setError] = useState('');
 
   async function handleLogin() {
@@ -27,29 +22,11 @@ export default function LoginScreen() {
     }
     setLoading(true);
     try {
-      await setApiUrl(serverUrl);
       await signIn(email, password);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Login gagal. Coba lagi.');
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function handleTest() {
-    setTesting(true);
-    setError('');
-    try {
-      await setApiUrl(serverUrl);
-      const data = (await api<{ name?: string; version?: string }>('/')) as unknown as {
-        name?: string;
-        version?: string;
-      };
-      Alert.alert('Terhubung ✓', `Server aktif.\n${data?.name ?? 'KKA Mobile API'}${data?.version ? ' v' + data.version : ''}`);
-    } catch (e) {
-      Alert.alert('Gagal terhubung', e instanceof Error ? e.message : 'Periksa URL API.');
-    } finally {
-      setTesting(false);
     }
   }
 
@@ -98,23 +75,6 @@ export default function LoginScreen() {
             ) : null}
             <Button title="Masuk" onPress={handleLogin} loading={loading} />
           </Card>
-
-          <Text
-            style={styles.link}
-            onPress={() => setShowAdvanced((v) => !v)}
-          >
-            {showAdvanced ? 'Sembunyikan pengaturan server' : 'Pengaturan server (lanjutan)'}
-          </Text>
-
-          {showAdvanced ? (
-            <Card>
-              <Input label="URL API" value={serverUrl} onChangeText={setServerUrl} placeholder="https://kka.arsipdigital-inspektorat.com/api" autoCapitalize="none" />
-              <Button title={testing ? 'Menguji...' : 'Uji koneksi'} variant="outline" onPress={handleTest} loading={testing} small />
-              <Text style={{ color: colors.muted, fontSize: 12, marginTop: spacing.sm }}>
-                Isi dengan URL server live, tanpa garis miring di akhir.
-              </Text>
-            </Card>
-          ) : null}
 
           <Text style={styles.footnote}>
             Pemerintah Kabupaten Rokan Hilir · Inspektorat Daerah
@@ -166,6 +126,5 @@ const styles = StyleSheet.create({
   logoImage: { width: 78, height: 78 },
   title: { fontSize: 26, fontWeight: '900', color: colors.white, letterSpacing: 0.5 },
   subtitle: { color: '#A7F3D0', fontSize: 13, textAlign: 'center', marginTop: 6 },
-  link: { color: colors.gold, textAlign: 'center', fontSize: 13, fontWeight: '600', marginVertical: spacing.sm },
   footnote: { color: '#86EFAC', fontSize: 11, textAlign: 'center', marginTop: spacing.lg, lineHeight: 16 },
 });

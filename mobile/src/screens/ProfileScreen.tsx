@@ -3,9 +3,9 @@ import { Alert, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { UserApi } from '../api/endpoints';
-import { getApiUrl, setApiUrl } from '../config';
 import { useAuth } from '../context/AuthContext';
 import { colors, spacing } from '../theme';
+import { APP_VERSION_LABEL } from '../version';
 import { Button, Card, Input, Screen, SectionTitle } from '../components/ui';
 
 export default function ProfileScreen() {
@@ -22,10 +22,6 @@ export default function ProfileScreen() {
   const [confirmPass, setConfirmPass] = useState('');
   const [passLoading, setPassLoading] = useState(false);
   const [passMsg, setPassMsg] = useState('');
-
-  const [serverUrl, setServerUrl] = useState(getApiUrl());
-  const [saveUrlLoading, setSaveUrlLoading] = useState(false);
-  const [urlMsg, setUrlMsg] = useState('');
 
   useEffect(() => {
     setNama(user?.nama ?? '');
@@ -71,19 +67,6 @@ export default function ProfileScreen() {
     }
   }
 
-  async function handleSaveUrl() {
-    setUrlMsg('');
-    setSaveUrlLoading(true);
-    try {
-      await setApiUrl(serverUrl);
-      setUrlMsg('✅ URL API tersimpan.');
-    } catch (e) {
-      setUrlMsg('⚠️ ' + (e instanceof Error ? e.message : 'Gagal menyimpan URL.'));
-    } finally {
-      setSaveUrlLoading(false);
-    }
-  }
-
   function confirmLogout() {
     Alert.alert('Keluar', 'Anda yakin ingin keluar?', [
       { text: 'Batal', style: 'cancel' },
@@ -124,16 +107,9 @@ export default function ProfileScreen() {
           <Button title="Ganti Password" onPress={handleChangePassword} loading={passLoading} />
         </Card>
 
-        <SectionTitle>Server</SectionTitle>
-        <Card>
-          <Input label="URL API" value={serverUrl} onChangeText={setServerUrl} autoCapitalize="none" />
-          {urlMsg ? <Text style={{ color: colors.muted, marginBottom: spacing.sm, fontSize: 13 }}>{urlMsg}</Text> : null}
-          <Button title="Simpan URL API" variant="outline" onPress={handleSaveUrl} loading={saveUrlLoading} />
-        </Card>
-
         <Button title="Keluar" variant="danger" onPress={confirmLogout} style={{ marginTop: spacing.md, marginBottom: spacing.xl }} />
         <Text style={{ color: colors.muted, fontSize: 11, textAlign: 'center', marginBottom: spacing.xl }}>
-          KKA Mobile v1.0.0 · Data sinkron dengan server KKA
+          {APP_VERSION_LABEL} · Data sinkron dengan server KKA
         </Text>
       </Screen>
     </SafeAreaView>
