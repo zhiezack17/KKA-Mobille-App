@@ -73,7 +73,7 @@ export function Card({
 
 /* ---------------------------------- Button --------------------------------- */
 
-type ButtonVariant = 'primary' | 'outline' | 'danger' | 'ghost';
+type ButtonVariant = 'primary' | 'outline' | 'danger' | 'ghost' | 'accent';
 
 export function Button({
   title,
@@ -94,11 +94,13 @@ export function Button({
 }) {
   const bg =
     variant === 'primary' ? colors.primary :
+    variant === 'accent' ? colors.gold :
     variant === 'danger' ? colors.danger :
-    variant === 'outline' ? 'transparent' : 'transparent';
+    'transparent';
   const border = variant === 'outline' ? colors.primary : 'transparent';
   const fg =
     variant === 'primary' || variant === 'danger' ? colors.white :
+    variant === 'accent' ? colors.primaryDeep :
     variant === 'outline' ? colors.primary : colors.muted;
 
   const base: ViewStyle = {
@@ -300,6 +302,31 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     marginBottom: spacing.md,
   },
+  statCard: {
+    flex: 1,
+    marginBottom: 0,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  statGlow: {
+    position: 'absolute',
+    right: -24,
+    top: -24,
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+  },
+  statLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  statValue: { fontSize: 20, fontWeight: '900', marginTop: 6 },
+  statSub: { fontSize: 11, marginTop: 4, fontWeight: '500' },
   label: { fontSize: 13, fontWeight: '600', color: colors.text, marginBottom: 6 },
   input: {
     backgroundColor: colors.white,
@@ -360,17 +387,42 @@ const styles = StyleSheet.create({
   optionText: { fontSize: 15, color: colors.text, flexShrink: 1 },
 });
 
+export type StatTone = 'emerald' | 'blue' | 'gold' | 'teal' | 'rose';
+
+const STAT_TONES: Record<StatTone, { bg: string; fg: string; sub: string }> = {
+  emerald: { bg: '#047857', fg: '#FFFFFF', sub: '#A7F3D0' },
+  blue: { bg: '#2563EB', fg: '#FFFFFF', sub: '#BFDBFE' },
+  gold: { bg: '#EAB308', fg: '#022C22', sub: '#78350F' },
+  teal: { bg: '#0F766E', fg: '#FFFFFF', sub: '#99F6E4' },
+  rose: { bg: '#BE123C', fg: '#FFFFFF', sub: '#FECDD3' },
+};
+
 export function StatCard({
   label,
   value,
   sub,
   color = colors.primary,
+  tone,
 }: {
   label: string;
   value: string;
   sub?: string;
   color?: string;
+  tone?: StatTone;
 }) {
+  const t = tone ? STAT_TONES[tone] : null;
+  if (t) {
+    return (
+      <View style={[styles.statCard, { backgroundColor: t.bg }]}>
+        <View style={styles.statGlow} />
+        <Text style={[styles.statLabel, { color: t.sub }]}>{label}</Text>
+        <Text style={[styles.statValue, { color: t.fg }]} numberOfLines={1} adjustsFontSizeToFit>
+          {value}
+        </Text>
+        {sub ? <Text style={[styles.statSub, { color: t.sub }]}>{sub}</Text> : null}
+      </View>
+    );
+  }
   return (
     <View style={[styles.card, { flex: 1, marginBottom: 0 }]}>
       <Text style={{ color: colors.muted, fontSize: 12, fontWeight: '600' }}>{label}</Text>
@@ -388,8 +440,17 @@ export function Row({ children, style }: { children: React.ReactNode; style?: Vi
 
 export function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <Text style={{ fontSize: 15, fontWeight: '800', color: colors.text, marginBottom: spacing.sm, marginTop: spacing.sm }}>
-      {children}
-    </Text>
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.sm,
+        marginTop: spacing.sm,
+        marginBottom: spacing.sm,
+      }}
+    >
+      <View style={{ width: 4, height: 16, borderRadius: 2, backgroundColor: colors.gold }} />
+      <Text style={{ fontSize: 15, fontWeight: '800', color: colors.primaryDarker }}>{children}</Text>
+    </View>
   );
 }

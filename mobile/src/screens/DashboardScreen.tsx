@@ -1,13 +1,13 @@
 import React, { useCallback, useState } from 'react';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { DashboardApi, RekapApi } from '../api/endpoints';
 import { isUnauthorized } from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import { colors, spacing } from '../theme';
+import { colors, radius, spacing } from '../theme';
 import { fmtIDR, fmtNum, fmtPercent } from '../utils/format';
 import { Badge, Button, Card, ErrorView, Loading, Row, Screen, SectionTitle, StatCard } from '../components/ui';
 import type { DashboardData, RekapData } from '../types';
@@ -70,15 +70,17 @@ export default function DashboardScreen() {
           setRefreshing(false);
         }}
       >
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text style={{ fontSize: 22, fontWeight: '900', color: colors.text, flex: 1 }}>
-            Halo, {user?.nama ?? 'Auditor'} 👋
+        <View style={styles.hero}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text style={{ fontSize: 20, fontWeight: '900', color: colors.white, flex: 1, flexShrink: 1 }}>
+              Halo, {user?.nama ?? 'Auditor'} 👋
+            </Text>
+            <Button title="+ Buat Sesi" small variant="accent" onPress={() => navigation.navigate('SesiForm', {})} />
+          </View>
+          <Text style={{ color: '#A7F3D0', marginTop: 6, fontSize: 13 }}>
+            {user?.jabatan ? `${user.jabatan} · ` : ''}Data sinkron dengan server KKA.
           </Text>
-          <Button title="+ Buat Sesi" small onPress={() => navigation.navigate('SesiForm', {})} />
         </View>
-        <Text style={{ color: colors.muted, marginBottom: spacing.lg }}>
-          {user?.jabatan ? `${user.jabatan} · ` : ''}Data sinkron dengan server KKA.
-        </Text>
 
         {error ? (
           <ErrorView
@@ -93,17 +95,17 @@ export default function DashboardScreen() {
         {stats ? (
           <>
             <Row>
-              <StatCard label="Total Sesi" value={fmtNum(stats.total_sesi)} sub={`${fmtNum(stats.sesi_tahun_ini)} di ${year}`} />
-              <StatCard label="Total Desa" value={fmtNum(stats.total_desa)} sub={`${fmtNum(stats.total_kecamatan)} kecamatan`} color={colors.success} />
+              <StatCard label="Total Sesi" value={fmtNum(stats.total_sesi)} sub={`${fmtNum(stats.sesi_tahun_ini)} di ${year}`} tone="emerald" />
+              <StatCard label="Total Desa" value={fmtNum(stats.total_desa)} sub={`${fmtNum(stats.total_kecamatan)} kecamatan`} tone="blue" />
             </Row>
             <View style={{ height: spacing.md }} />
             <Row>
-              <StatCard label="Total Pagu" value={fmtIDR(stats.total_anggaran)} color={colors.warning} />
+              <StatCard label="Total Pagu" value={fmtIDR(stats.total_anggaran)} tone="gold" />
               <StatCard
                 label="Realisasi"
                 value={fmtPercent(stats.persentase_realisasi)}
                 sub={fmtIDR(stats.total_realisasi)}
-                color={colors.success}
+                tone="teal"
               />
             </Row>
           </>
@@ -157,3 +159,13 @@ export default function DashboardScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  hero: {
+    backgroundColor: colors.primaryDarker,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+    overflow: 'hidden',
+  },
+});

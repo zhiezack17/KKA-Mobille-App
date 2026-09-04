@@ -117,26 +117,26 @@ export default function RekapScreen() {
         {r ? (
           <>
             <Row>
-              <StatCard label="Desa Diaudit" value={fmtNum(r.total_desa)} />
-              <StatCard label="Total Sesi" value={fmtNum(r.total_sesi)} color={colors.success} />
+              <StatCard label="Desa Diaudit" value={fmtNum(r.total_desa)} tone="emerald" />
+              <StatCard label="Total Sesi" value={fmtNum(r.total_sesi)} tone="blue" />
             </Row>
             <View style={{ height: spacing.md }} />
             <Row>
-              <StatCard label="Total Pagu" value={fmtIDR(r.total_pagu)} color={colors.warning} />
+              <StatCard label="Total Pagu" value={fmtIDR(r.total_pagu)} tone="gold" />
               <StatCard
                 label="Realisasi"
                 value={fmtPercent(r.persentase_realisasi)}
                 sub={fmtIDR(r.total_realisasi)}
-                color={colors.success}
+                tone="teal"
               />
             </Row>
             <View style={{ height: spacing.md }} />
             <Row>
-              <StatCard label="Dikwitansi" value={fmtIDR(r.total_dikwitansi)} />
+              <StatCard label="Dikwitansi" value={fmtIDR(r.total_dikwitansi)} tone="blue" />
               <StatCard
                 label="Selisih (D−R)"
                 value={fmtIDR(r.selisih)}
-                color={toNum(r.selisih) >= 0 ? colors.success : colors.danger}
+                tone={toNum(r.selisih) >= 0 ? 'emerald' : 'rose'}
               />
             </Row>
           </>
