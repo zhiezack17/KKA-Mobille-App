@@ -57,7 +57,7 @@ Demi keamanan, hapus `public/install.php` dari server lewat File Manager cPanel.
 ### 7. Login
 - URL: `https://arsipdigital-inspektorat.com/login`
 - Email: `admin@inspektorat-rohil.go.id`
-- Password: `Admin@2026` (sesuai `.env`)
+- Password: **lihat file `.env` di server** (jangan commit `.env` ke Git!)
 - **Segera ganti password** lewat menu Profil.
 
 ---
