@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, Image, KeyboardAvoidingView, Platform, Text, View, StyleSheet } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, Text, View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { api } from '../api/client';
@@ -17,6 +17,9 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [testing, setTesting] = useState(false);
   const [error, setError] = useState('');
+
+  // TODO: ganti dengan logo resmi saat file tersedia
+  const logoLabel = 'KKA';
 
   async function handleLogin() {
     setError('');
@@ -54,7 +57,9 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.root}>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
+      <View style={styles.decoGold} />
+      <View style={styles.decoEmerald} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -62,7 +67,7 @@ export default function LoginScreen() {
         <View style={styles.content}>
           <View style={styles.hero}>
             <View style={styles.logo}>
-              <Text style={styles.logoText}>KKA</Text>
+              <Text style={styles.logoText}>{logoLabel}</Text>
             </View>
             <Text style={styles.title}>KKA Mobile</Text>
             <Text style={styles.subtitle}>Kertas Kerja Audit · Inspektorat Kabupaten Rokan Hilir</Text>
@@ -110,7 +115,7 @@ export default function LoginScreen() {
           ) : null}
 
           <Text style={styles.footnote}>
-            Pastikan aplikasi Expo Go di HP sudah versi terbaru{'\n'}dan data login sama dengan aplikasi web KKA.
+            Pemerintah Kabupaten Rokan Hilir · Inspektorat Daerah
           </Text>
         </View>
       </KeyboardAvoidingView>
@@ -119,21 +124,44 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
+  root: { flex: 1, backgroundColor: colors.primaryDarker },
+  decoGold: {
+    position: 'absolute',
+    top: -70,
+    left: -70,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: 'rgba(234, 179, 8, 0.09)',
+  },
+  decoEmerald: {
+    position: 'absolute',
+    bottom: -100,
+    right: -80,
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+  },
   content: { flex: 1, padding: spacing.xl, justifyContent: 'center' },
   hero: { alignItems: 'center', marginBottom: spacing.xl },
   logo: {
-    width: 84,
-    height: 84,
-    borderRadius: radius.lg,
-    backgroundColor: colors.primary,
+    width: 96,
+    height: 96,
+    borderRadius: radius.xl,
+    backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
   },
-  logoText: { color: colors.white, fontSize: 26, fontWeight: '900', letterSpacing: 1 },
-  title: { fontSize: 24, fontWeight: '900', color: colors.text },
-  subtitle: { color: colors.muted, fontSize: 13, textAlign: 'center', marginTop: 6 },
-  link: { color: colors.primary, textAlign: 'center', fontSize: 13, fontWeight: '600', marginVertical: spacing.sm },
-  footnote: { color: colors.muted, fontSize: 11, textAlign: 'center', marginTop: spacing.lg, lineHeight: 16 },
+  logoText: { color: colors.primaryDarker, fontSize: 28, fontWeight: '900', letterSpacing: 1 },
+  title: { fontSize: 26, fontWeight: '900', color: colors.white, letterSpacing: 0.5 },
+  subtitle: { color: '#A7F3D0', fontSize: 13, textAlign: 'center', marginTop: 6 },
+  link: { color: colors.gold, textAlign: 'center', fontSize: 13, fontWeight: '600', marginVertical: spacing.sm },
+  footnote: { color: '#86EFAC', fontSize: 11, textAlign: 'center', marginTop: spacing.lg, lineHeight: 16 },
 });
